@@ -6,15 +6,16 @@ import tasks.Task;
 import java.util.ArrayList;
 
 public class Main {
-    // Акулы - топчик, полностью с тобой согласен :)
-    // На этот раз без без шуток! Все серьезно.
+    //Счетчик проведенных дней: 1.5
+    // Время почти два часа ночи. У меня нервяк. Проект доделан, но я не знаю, какую шутку придумать
+    // думаю пойти гуглить анекдоты про котят. Или какой-нибудь гаччи анекдот...
     public static void main(String[] args) {
         Manager manager = new Manager();
         Task autoTask = new Task("Auto", "Clear auto", "NEW");
         Task autoTaskD = new Task("Auto", "Clear auto", "DONE");
         Task autoTas = new Task("Auto", "Clear auto", "NEW");
         Task business = new Task("Business", "investing in Binance", "NEW");
-
+        //Интересно, мой код тесты прошел? Предыдущий, не считая апдейта Epic
         int auto = manager.addTask(autoTask);
         int autoDOne = manager.addTask(autoTaskD);
         manager.addTask(autoTas);

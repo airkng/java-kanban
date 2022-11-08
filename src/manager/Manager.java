@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Manager implements IManager {
+    //Как у тебя дела? Как работа?
+    //Я кстати так и не понял, зачем нужен интерфейс. При просмотре вебинара сказли, что можно сделать, но так и не понял к чему он
     private HashMap<Integer, Epic> epics = new HashMap<>();
     private HashMap<Integer, Task> tasks = new HashMap<>();
     private HashMap<Integer, Subtask> subtasks = new HashMap<>();
