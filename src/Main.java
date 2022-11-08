@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 public class Main {
     // Акулы - топчик, полностью с тобой согласен :)
+    // На этот раз без без шуток! Все серьезно.
     public static void main(String[] args) {
         Manager manager = new Manager();
         Task autoTask = new Task("Auto", "Clear auto", "NEW");

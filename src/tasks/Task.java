@@ -3,6 +3,7 @@ package tasks;
 import java.util.Objects;
 
 public class Task {
+    //Ладно-ладно. В общем как-то раз пупа и лупа...
     private static int count;
 
     protected static final String newStatus = "NEW";
