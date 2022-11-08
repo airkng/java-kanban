@@ -1,4 +1,4 @@
-import Manager.Manager;
+import manager.Manager;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
