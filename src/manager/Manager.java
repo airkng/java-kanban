@@ -12,29 +12,18 @@ public class Manager implements IManager {
     private HashMap<Integer, Task> tasks = new HashMap<>();
     private HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
-
+    @Override
     public ArrayList<Task> getTasksList() {
-        ArrayList<Task> tasksList = new ArrayList<>();
-        for (Integer id : tasks.keySet()) {
-            tasksList.add(tasks.get(id)); //достаем из мапы и добавляем в новый лист экземпляр Task
-        }
-        return tasksList;
+        //Спасибо за совет, очень лаконично красиво мило
+        return new ArrayList<>(tasks.values());
     }
-
+    @Override
     public ArrayList<Subtask> getSubtasksList() {
-        ArrayList<Subtask> subtaskList = new ArrayList<>();
-        for (Integer id : subtasks.keySet()) {
-            subtaskList.add(subtasks.get(id));  //аналогично методу выше
-        }
-        return subtaskList;
+        return new ArrayList<>(subtasks.values());
     }
-
+    @Override
     public ArrayList<Epic> getEpicList() {
-        ArrayList<Epic> epicList = new ArrayList<>();
-        for (Integer id : epics.keySet()) {
-            epicList.add(epics.get(id));
-        }
-        return epicList;
+        return new ArrayList<>(epics.values());
     }
 
     @Override
@@ -86,10 +75,12 @@ public class Manager implements IManager {
             System.out.println("Сабтаск уже добавлен. Воспользуйтесь командой .update(Subtask subtask)");
             return -1;
         } else {
-            int key = subtask.getLinkID();
+            int key = subtask.getEpicID();
             if (epics.containsKey(key)) {
                 Epic epic = epics.get(key);
                 epic.linkSubtask(subtask);
+                epic.checkAndUpdateStatus(subtasks);
+
                 subtasks.put(subtask.getId(), subtask);
                 epics.put(epic.getId(), epic);
                 return subtask.getId();
@@ -126,14 +117,26 @@ public class Manager implements IManager {
     }
 
     @Override
+    //Воообще, задумка была следующая. При добавлении, удалении, либо при апдейте сабтаска либо при апдейте эпика, мы сразу
+    //вычисляем у него статус с помощью одного из метода
+    // и checkAndUpdateStatus
+    // Смотри, вот приходит сабтаск на апдейт со статусом Done, я сразу это ловлю, и если у его эпика до этого все
+    // все сабтаски были done, то меняю у эпика статус и засовываю в мапу.
+    // Не понимаю, че от меня хотят если честно
+    // типо при апдейте сабтаска либо при его добавлении, у мапы Epic будет старый статус и только при апдейте эпика он должен
+    // поменяться или что
+    // И да, если ты говоришь, что на апдейт заранее приходит эпик с известными его сабтасками, то нужно конструктор с
+    // создать в эпике с АrrayList. Не понимаю в общем, что требуют от меня.
+    // Реализую по задумке выше
+
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
             Subtask oldSubtask = subtasks.get(subtask.getId()); //Достаем старый сабтаск
-            Epic epic = epics.get(oldSubtask.getLinkID()); //Достаем epic, в котором был этот сабтаск
-            epic.epicSubtasksList.remove(oldSubtask); //убираем из листа в Epic этот сабтаск
+            Epic epic = epics.get(oldSubtask.getEpicID()); //Достаем epic, в котором был этот сабтаск
+            epic.removeSubtask(oldSubtask.getId()); //убираем из листа в Epic этот сабтаск
             epic.linkSubtask(subtask); //связываем текущий сабтаск с эпиком
-
-            subtasks.remove(oldSubtask.getId()); //убираем его из мапы
+            epic.checkAndUpdateStatus(subtasks); //проверяем и меняем статус Epic если надо
+            //убрал эту строчку, согласен с тобой. Забыл ее убрать до проверки
             subtasks.put(subtask.getId(), subtask); //добавляем новый
         } else {
             System.out.println("subtask не найден в списке HashMap");
@@ -142,27 +145,12 @@ public class Manager implements IManager {
 
     @Override
     public void updateEpic(Epic epic) {
-        //убираю при обновлении сабтаски старого Epic, добавляю в мапу новый эпик
-        if (epics.containsKey(epic.getId())) {
-            Epic oldEpic = epics.get(epic.getId());
-            ArrayList<Subtask> oldList = oldEpic.epicSubtasksList;
-            for (Subtask subtask : oldList) {
-                subtasks.remove(subtask.getId());
-            }
-            epics.put(epic.getId(), epic);
-        } else {
-            System.out.println("epic не найден в списке HashMap");
-        }
-    }
-
-    public void updateAndSaveOldInfoEpic(Epic epic) {
-        //Это метод с сохранением сабтасков старого эпика, т.к снова не понял, шо от меня хотят
         if (epics.containsValue(epic)) {
             Epic oldEpic = epics.get(epic.getId());
-            ArrayList<Subtask> oldList = oldEpic.epicSubtasksList;
-            for (Subtask subtask : oldList) {
-                epic.epicSubtasksList.add(subtask);
-                epic.checkAndUpdateStatus();
+            ArrayList<Integer> oldList = oldEpic.getEpicSubtasksList();
+            for (Integer id : oldList) {
+                epic.addSubtask(id);
+                epic.checkAndUpdateStatus(subtasks);// в принципе можно не делать проверку Сабтаски то старые
             }
             epics.put(epic.getId(), epic);
         } else {
@@ -183,9 +171,9 @@ public class Manager implements IManager {
     public void deleteSubtaskById(Integer id) {
         if (subtasks.containsKey(id)) {
             Subtask deletedSubtask = subtasks.get(id);
-            Epic epic = epics.get(deletedSubtask.getLinkID());
-            epic.epicSubtasksList.remove(deletedSubtask);
-            epic.checkAndUpdateStatus();
+            Epic epic = epics.get(deletedSubtask.getEpicID());
+            epic.removeSubtask(deletedSubtask.getId());
+            epic.checkAndUpdateStatus(subtasks); // проверяем статус Эпика
             subtasks.remove(id);
         } else {
             System.out.println("Ключа subtask " + id + " не существует");
@@ -194,9 +182,9 @@ public class Manager implements IManager {
     @Override
     public void deleteEpicById(Integer id) {
         if (epics.containsKey(id)) {
-            ArrayList<Subtask> oldList = epics.get(id).epicSubtasksList;
-            for (Subtask subtask : oldList) {
-                subtasks.remove(subtask.getId());
+            ArrayList<Integer> subtasksID = epics.get(id).getEpicSubtasksList();
+            for (Integer key : subtasksID) {
+                subtasks.remove(key);
             }
             epics.remove(id);
         } else {
@@ -206,6 +194,17 @@ public class Manager implements IManager {
 
     @Override
     public ArrayList<Subtask> getEpicSubtasks(Integer id) {
-        return epics.getOrDefault(id, null).epicSubtasksList;
+        //ахахахахахаххаха, да лаааадно тебе. Ну могу я менять в проекте напрямую лист шо тут такого)))
+        if(epics.containsKey(id)) {
+            ArrayList<Integer> subtasksID = epics.get(id).getEpicSubtasksList();
+            ArrayList<Subtask> subtasksList = new ArrayList<>();
+            for (Integer key : subtasksID) {
+                subtasksList.add(subtasks.get(key));
+            }
+            return subtasksList;
+        }
+        else {
+            return null;
+        }
     }
 }

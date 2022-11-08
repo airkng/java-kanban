@@ -1,13 +1,19 @@
 package tasks;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class Epic extends Task {
 
     private static int epicId = 100_000;
 
-    public ArrayList<Subtask> epicSubtasksList = new ArrayList<>();
+    private ArrayList<Integer> epicSubtasksList = new ArrayList<>();
+
+    public ArrayList<Integer> getEpicSubtasksList() {
+        return epicSubtasksList;
+    }
+
 
     public Epic(String name, String description) {
         super(name, description, newStatus, epicId);
@@ -19,20 +25,31 @@ public class Epic extends Task {
         super(name, description, "NEW", oldEpicID);
     }
 
-    public void linkSubtask(Subtask subtask) {
-        epicSubtasksList.add(subtask);
-        this.checkAndUpdateStatus();
+    public void removeSubtask(Integer id){
+        epicSubtasksList.remove(id);
     }
 
-    public void checkAndUpdateStatus() {
+    public void addSubtask(Integer id){
+        epicSubtasksList.add(id);
+    }
+    public void linkSubtask(Subtask subtask) {
+        epicSubtasksList.add(subtask.getId());
+    }
+    //Эххх, а я старался
 
-        for (Subtask subtask : epicSubtasksList) {
+    public void checkAndUpdateStatus(HashMap<Integer, Subtask> subtasks) {
+        for (Integer id : epicSubtasksList) {
+            Subtask subtask = subtasks.get(id);
+            //если в листе сабтасков есть хоть один элемент IN_PROGRESS или DONE, тогда меняем статус у эпика на
+            // IN_PROGRESS
             if (subtask.getStatus().equals(inProgressStatus) || subtask.getStatus().equals(doneStatus)) {
                 this.status = inProgressStatus;
             }
         }
+        //Если хоть один элемент не Done, то статус Эпика остается таким же как был и прерываем цикл
         String status = doneStatus;
-        for (Subtask subtask : epicSubtasksList) {
+        for (Integer id : epicSubtasksList) {
+            Subtask subtask = subtasks.get(id);
             if (subtask.getStatus().equals(doneStatus)) {
             } else {
                 status = this.status;
@@ -44,12 +61,9 @@ public class Epic extends Task {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || this == null) {
-            return false;
-        }
-        if (!(obj instanceof Epic)) {
-            return false;
-        }
+        if (this == obj) return true; // проверяем адреса объектов
+        if (obj == null) return false; // проверяем ссылку на null
+        if (this.getClass() != obj.getClass()) return false;
         Epic epic = (Epic) obj;
         return (Objects.equals(this.name, epic.getName()) && Objects.equals(this.description, epic.getDescription())
                 && Objects.equals(this.status, epic.getStatus()) && Objects.equals(this.id, epic.getId()));

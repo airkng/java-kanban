@@ -10,11 +10,23 @@ public class Task {
     protected static final String inProgressStatus = "IN_PROGRESS";
     protected static final String doneStatus = "DONE";
 
+    //Enum не проходил, на каникулах разберу. Пока боюсь в дедлайн жесткого спринта не уложиться
+    //Итак эту неделю про*бал читая документацию по Git. Сейчас хочу нормально шарить за гит.
+    //А я че то подумал, зачем сеттеры нужны тут, ахаха. Из-за них багов столько потенциально может появиться как будто бы
     protected String name;
     protected String description;
     protected String status;
-    protected int id;
+    protected Integer id;
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    //Сеттеры для айди и для статуса не ставлю, так как они отвечают и за ключи от мапы, и тогда можно изменить статус у эпика
 
     public String getName() {
         return name;
@@ -67,22 +79,20 @@ public class Task {
     @Override
     public String toString() {
         return "Task = {\n name = '" + this.name + '\'' +
-                "\n description = ' " + this.description + '\'' +
-                "\n status = '" + this.status + '\'' +
-                "\n id = '" + this.id + '\'' + "\n";
+                " description = ' " + this.description + '\'' +
+                " status = '" + this.status + '\'' +
+                "id = '" + this.id + '\'' + "\n";
     }
-
+    //хорошо, буду знать в следующий раз
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || this == null) {
-            return false;
-        }
-        if (!(obj instanceof Task)) {
-            return false;
-        }
+        if (this == obj) return true; // проверяем адреса объектов
+        if (obj == null) return false; // проверяем ссылку на null
+        if (this.getClass() != obj.getClass()) return false;
         Task task = (Task) obj;
-        return (Objects.equals(this.name, task.getName()) && Objects.equals(this.description, task.getDescription())
-                && Objects.equals(this.status, task.getStatus()));
+        return (Objects.equals(this.name, task.getName()) &&
+                Objects.equals(this.description, task.getDescription()) &&
+                Objects.equals(this.status, task.getStatus()));
     }
 
     @Override
