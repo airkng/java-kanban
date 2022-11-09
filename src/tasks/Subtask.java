@@ -7,6 +7,10 @@ public class Subtask extends Task {
 
     //Вот зачем тебе сеттеры, от эпика?) Сломать логику хочешь?)) Создай ты новый объект, ничего страшного)))
     //Окей, я даю тебе сеттер -_-
+    // В остальных слуйчаях, да. Он нужен. Но все равно вопросы по статусам и персонаотным айдишкам остается открытым
+    //Вот допустим, мы через сеттер можем установить статус Эпика, то есть напрямую его менять. Хотя
+    //по заданию этого делать нельзя и надо как-то пресечь это. Вот чет мылей никаких нет.
+    // мб оверрайднуть сеттер для статуса у эпика и запретить изменение, хз если честно
     public int getEpicID() {
         return epicID;
     }
@@ -48,10 +52,10 @@ public class Subtask extends Task {
     }
     @Override
     public String toString() {
-        return "Subtask = {\n name = '" + this.name + '\'' +
-                "\n description = ' " + this.description + '\'' +
-                "\n status = '" + this.status + '\'' +
-                "\n id = '" + this.id + '\'' +
-                "\n linkId = '" + this.epicID + '\'' + "\n";
+        return "Subtask = {name = '" + this.name + '\'' +
+                " description = ' " + this.description + '\'' +
+                " status = '" + this.status + '\'' +
+                " id = '" + this.id + '\'' +
+                " linkId = '" + this.epicID + '\'' + "\n";
     }
 }

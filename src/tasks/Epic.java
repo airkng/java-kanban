@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class Epic extends Task {
-
+    //Александр, жду с нетерпением приглашения к вам на работу по окончании практикума ^_^
+    //Особые недостатки: душнила
     private static int epicId = 100_000;
 
     private ArrayList<Integer> epicSubtasksList = new ArrayList<>();
@@ -38,25 +39,26 @@ public class Epic extends Task {
     //Эххх, а я старался
 
     public void checkAndUpdateStatus(HashMap<Integer, Subtask> subtasks) {
+        int doneCount = 0;
+        int progressCount = 0;
         for (Integer id : epicSubtasksList) {
             Subtask subtask = subtasks.get(id);
-            //если в листе сабтасков есть хоть один элемент IN_PROGRESS или DONE, тогда меняем статус у эпика на
-            // IN_PROGRESS
-            if (subtask.getStatus().equals(inProgressStatus) || subtask.getStatus().equals(doneStatus)) {
-                this.status = inProgressStatus;
+            if (subtask.getStatus().equals(inProgressStatus)) {
+                progressCount++;
+            }
+            if (subtask.getStatus().equals(doneStatus)){
+                doneCount++;
             }
         }
-        //Если хоть один элемент не Done, то статус Эпика остается таким же как был и прерываем цикл
-        String status = doneStatus;
-        for (Integer id : epicSubtasksList) {
-            Subtask subtask = subtasks.get(id);
-            if (subtask.getStatus().equals(doneStatus)) {
-            } else {
-                status = this.status;
-                break;
-            }
+        if (doneCount == epicSubtasksList.size()){
+            this.status = doneStatus;
         }
-        this.status = status;
+        else if (progressCount >= 1){
+            this.status = inProgressStatus;
+        }
+        else {
+            this.status = newStatus;
+        }
     }
 
     @Override
@@ -70,10 +72,11 @@ public class Epic extends Task {
     }
 
     @Override
+    //Упс, забыл поправить
     public String toString() {
-        return "Epic = {\n name = '" + this.name + '\'' +
-                "\n description = ' " + this.description + '\'' +
-                "\n status = '" + this.status + '\'' +
-                "\n id = '" + this.id + '\'';
+        return "Epic = {name = '" + this.name + '\'' +
+                " description = ' " + this.description + '\'' +
+                " status = '" + this.status + '\'' +
+                " id = '" + this.id + '\'';
     }
 }

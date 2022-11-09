@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Manager implements IManager {
-    //Как у тебя дела? Как работа?
-    //Я кстати так и не понял, зачем нужен интерфейс. При просмотре вебинара сказли, что можно сделать, но так и не понял к чему он
+    //Поправляйся, Александр! Очень приятно, что ты у меня проверяешь!!! Обожаю тебя, советы очень годные даешь!
+
     private HashMap<Integer, Epic> epics = new HashMap<>();
     private HashMap<Integer, Task> tasks = new HashMap<>();
     private HashMap<Integer, Subtask> subtasks = new HashMap<>();
@@ -105,9 +105,7 @@ public class Manager implements IManager {
         }
     }
 
-    //"Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра." - ТЗ от яндекса
-    //То есть объект по идее должен существовать, так как мы его апдейтим. Следовательно, .equals() у таска НЕ сверяет
-    //айдишники
+
     @Override
     public void updateTask(Task task) {
         //В таске должен быть айди старого таска, который мы заменяем на новый
@@ -122,14 +120,8 @@ public class Manager implements IManager {
     //Воообще, задумка была следующая. При добавлении, удалении, либо при апдейте сабтаска либо при апдейте эпика, мы сразу
     //вычисляем у него статус с помощью одного из метода
     // и checkAndUpdateStatus
-    // Смотри, вот приходит сабтаск на апдейт со статусом Done, я сразу это ловлю, и если у его эпика до этого все
-    // все сабтаски были done, то меняю у эпика статус и засовываю в мапу.
-    // Не понимаю, че от меня хотят если честно
-    // типо при апдейте сабтаска либо при его добавлении, у мапы Epic будет старый статус и только при апдейте эпика он должен
-    // поменяться или что
-    // И да, если ты говоришь, что на апдейт заранее приходит эпик с известными его сабтасками, то нужно конструктор с
-    // создать в эпике с АrrayList. Не понимаю в общем, что требуют от меня.
-    // Реализую по задумке выше
+    //Ну просто это же логично, как по-другому то)) ТОгда это не приложение получится, а фигня какая-то забагованная
+    //Тз для меня очень непонятные, как будто бы говорят сделать что-то мега масштабное,а на деле... пару простых методов написать. меее :(
 
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
@@ -152,8 +144,8 @@ public class Manager implements IManager {
             ArrayList<Integer> oldList = oldEpic.getEpicSubtasksList();
             for (Integer id : oldList) {
                 epic.addSubtask(id);
-                epic.checkAndUpdateStatus(subtasks);// в принципе можно не делать проверку Сабтаски то старые
             }
+            epic.checkAndUpdateStatus(subtasks);
             epics.put(epic.getId(), epic);
         } else {
             System.out.println("epic не найден в списке HashMap");
@@ -196,7 +188,9 @@ public class Manager implements IManager {
 
     @Override
     public ArrayList<Subtask> getEpicSubtasks(Integer id) {
-        //ахахахахахаххаха, да лаааадно тебе. Ну могу я менять в проекте напрямую лист шо тут такого)))
+
+        //Вообще, я прекрасно понимаю, зачем нужно сеттеры ставить)) просто специально для багов оставил
+        // чтобы как раньше в Гта или Симс 3 коды вводить и вуаля! мы с бабками, оружием, телочками крутые дяди
         if(epics.containsKey(id)) {
             ArrayList<Integer> subtasksID = epics.get(id).getEpicSubtasksList();
             ArrayList<Subtask> subtasksList = new ArrayList<>();

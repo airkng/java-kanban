@@ -3,7 +3,7 @@ package tasks;
 import java.util.Objects;
 
 public class Task {
-    //Ладно-ладно. В общем как-то раз пупа и лупа...
+
     private static int count;
 
     protected static final String newStatus = "NEW";
@@ -25,8 +25,18 @@ public class Task {
     public void setDescription(String description) {
         this.description = description;
     }
+    //Я как будто бы вижу в этом много потенциальных ошибок. А вытащить объект и пересоздать новый
+    //да, сложно неудобно, но как будто бы потенциально меньше багов возникает. А тут допустим, дергаем у эпика метод,
+    //меняем его айдишку. И все собственно. Сабтаски указывают на несуществующий старый айди эпика и о новом ничего не знают
+    // Надо подумать над этим, как 4 спринт пройду, отпишусь с мыслями по этому поводу в слаке
 
-    //Сеттеры для айди и для статуса не ставлю, так как они отвечают и за ключи от мапы, и тогда можно изменить статус у эпика
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -77,11 +87,12 @@ public class Task {
     }
 
     @Override
+    //Лооол, я точно помню, что их убирал, чеее за херня
     public String toString() {
-        return "Task = {\n name = '" + this.name + '\'' +
+        return "Task = {name = '" + this.name + '\'' +
                 " description = ' " + this.description + '\'' +
                 " status = '" + this.status + '\'' +
-                "id = '" + this.id + '\'' + "\n";
+                " id = '" + this.id + '\'' + "\n"; // вот тут так и не понял, надо убрать этот перенос или нет
     }
     //хорошо, буду знать в следующий раз
     @Override
