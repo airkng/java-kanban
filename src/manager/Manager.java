@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Manager implements IManager {
-    //Поправляйся, Александр! Очень приятно, что ты у меня проверяешь!!! Обожаю тебя, советы очень годные даешь!
 
     private HashMap<Integer, Epic> epics = new HashMap<>();
     private HashMap<Integer, Task> tasks = new HashMap<>();

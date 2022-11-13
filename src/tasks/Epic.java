@@ -3,6 +3,7 @@ package tasks;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Scanner;
 
 public class Epic extends Task {
     //Александр, жду с нетерпением приглашения к вам на работу по окончании практикума ^_^
@@ -15,13 +16,22 @@ public class Epic extends Task {
         return epicSubtasksList;
     }
 
-
+    //А ты реально в проектах пользуешься этим слаком? По-моему в телеграме было бы проще работать
     public Epic(String name, String description) {
         super(name, description, newStatus, epicId);
         epicId++;
         System.out.println("Работу начинает конструктор Epic");
     }
-
+    @Override
+    public void setStatus(String status) {
+        System.out.println("О-оу, господин. Такое делать запрещено");
+    }
+    @Override
+    public void setId(Integer id) {
+        //хотел консольку подключить, чтобы оставлять за пользователем выбор, но вспоминл, шо низя консоль использовать))
+        System.out.println("Изменение id эпика приведет к потере взаимосвязи сабтасков и эпиков.");
+        this.id = id;
+    }
     public Epic(String name, String description, int oldEpicID) {
         super(name, description, "NEW", oldEpicID);
     }
@@ -36,31 +46,30 @@ public class Epic extends Task {
     public void linkSubtask(Subtask subtask) {
         epicSubtasksList.add(subtask.getId());
     }
-    //Эххх, а я старался
 
+    //ЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫ
     public void checkAndUpdateStatus(HashMap<Integer, Subtask> subtasks) {
         int doneCount = 0;
-        int progressCount = 0;
+        int newStatusCount = 0;
+
         for (Integer id : epicSubtasksList) {
             Subtask subtask = subtasks.get(id);
-            if (subtask.getStatus().equals(inProgressStatus)) {
-                progressCount++;
-            }
-            if (subtask.getStatus().equals(doneStatus)){
+           if (subtask.getStatus().equals(doneStatus)){
                 doneCount++;
-            }
+           }
+           if (subtask.getStatus().equals(newStatus)){
+                newStatusCount++;
+           }
         }
-        if (doneCount == epicSubtasksList.size()){
+        if (doneCount == epicSubtasksList.size()){ //значит, если все сабтаски == done, тогда статус Эпика = done
             this.status = doneStatus;
-        }
-        else if (progressCount >= 1){
+        } else if (newStatusCount == epicSubtasksList.size() || epicSubtasksList.size() == 0){
+            //если все сабтаски == new или лист пустой, тогда статус эпика = new.
+            this.status = newStatus;
+        } else { //иначе - статус ин_прогресс
             this.status = inProgressStatus;
         }
-        else {
-            this.status = newStatus;
-        }
     }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true; // проверяем адреса объектов
@@ -72,7 +81,6 @@ public class Epic extends Task {
     }
 
     @Override
-    //Упс, забыл поправить
     public String toString() {
         return "Epic = {name = '" + this.name + '\'' +
                 " description = ' " + this.description + '\'' +

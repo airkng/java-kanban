@@ -87,14 +87,13 @@ public class Task {
     }
 
     @Override
-    //Лооол, я точно помню, что их убирал, чеее за херня
     public String toString() {
         return "Task = {name = '" + this.name + '\'' +
                 " description = ' " + this.description + '\'' +
                 " status = '" + this.status + '\'' +
-                " id = '" + this.id + '\'' + "\n"; // вот тут так и не понял, надо убрать этот перенос или нет
+                " id = '" + this.id + '\'';
     }
-    //хорошо, буду знать в следующий раз
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true; // проверяем адреса объектов
