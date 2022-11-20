@@ -1,5 +1,6 @@
 package ru.yandex.taskTracker.managers.taskManager;
 
+import ru.yandex.taskTracker.managers.historyManager.IHistoryManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
@@ -8,14 +9,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class TaskManager implements ITaskManager {
-    //ПРОЕКТ СЫРОЙ, МОЖЕШЬ ДАЖЕ НЕ СМОТРЕТЬ ПОКА
+public class TaskManagerI implements ITaskManager, IHistoryManager {
+
 
     private final HashMap<Integer, Epic> epics = new HashMap<>();
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
     private final List<Task> historyList = new ArrayList<>();
+
     @Override
     public ArrayList<Task> getTasksList() {
 
@@ -47,16 +49,28 @@ public class TaskManager implements ITaskManager {
 
     @Override
     public Task getTask(Integer id) {
-        return tasks.getOrDefault(id, null);
+        Task task = tasks.getOrDefault(id, null);
+        if(task != null){
+            add(task);
+        }
+        return task;
     }
 
     @Override
     public Subtask getSubtask(Integer id) {
+        Task subtask = subtasks.getOrDefault(id, null);
+        if(subtask != null){
+            add(subtask);
+        }
         return subtasks.getOrDefault(id, null);
     }
 
     @Override
     public Epic getEpic(Integer id) {
+        Task epic = epics.getOrDefault(id, null);
+        if(epic != null){
+            add(epic);
+        }
         return epics.getOrDefault(id, null);
     }
 
@@ -75,7 +89,7 @@ public class TaskManager implements ITaskManager {
 
     @Override
     public int addSubtask(Subtask subtask) {
-        if (subtasks.containsKey(subtask.getId())) {
+        if (subtasks.containsValue(subtask)) {
             System.out.println("Сабтаск уже добавлен. Воспользуйтесь командой .update(Subtask subtask)");
             return -1;
         } else {
@@ -83,9 +97,8 @@ public class TaskManager implements ITaskManager {
             if (epics.containsKey(key)) {
                 Epic epic = epics.get(key);
                 epic.linkSubtask(subtask);
-                epic.checkAndUpdateStatus(subtasks);
-
                 subtasks.put(subtask.getId(), subtask);
+                epic.checkAndUpdateStatus(subtasks);
                 epics.put(epic.getId(), epic);
                 return subtask.getId();
             } else {
@@ -195,7 +208,25 @@ public class TaskManager implements ITaskManager {
             return null;
         }
     }
+
+    @Override
+    public void add(Task task) {
+        if(historyList.size() < 10){
+            historyList.add(task);
+        }
+        else{
+            historyList.remove(0);
+            historyList.add(task);
+        }
+    }
+    @Override
     public List<Task> getHistory(){
-        return null;
+        if(historyList.size() > 0){
+            return historyList;
+        }
+        else {
+            System.out.println("История пуста.");
+            return null;
+        }
     }
 }
