@@ -1,39 +1,37 @@
-package tasks;
+package ru.yandex.taskTracker.tasks;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.Scanner;
 
 public class Epic extends Task {
-    //Александр, жду с нетерпением приглашения к вам на работу по окончании практикума ^_^
-    //Особые недостатки: душнила
-    private static int epicId = 100_000;
 
-    private ArrayList<Integer> epicSubtasksList = new ArrayList<>();
+    private static int epicId = 100_000;
+    private final ArrayList<Integer> epicSubtasksList = new ArrayList<>();      //Лист айдишек сабтасков
+
+    public Epic(String name, String description) {
+        super(name, description, Status.NEW, epicId);
+        epicId++;
+        System.out.println("Работу начинает конструктор Epic");
+    }
+
+    public Epic(String name, String description, int oldEpicID) {
+        super(name, description, Status.NEW, oldEpicID);
+    }
 
     public ArrayList<Integer> getEpicSubtasksList() {
         return epicSubtasksList;
     }
 
-    //А ты реально в проектах пользуешься этим слаком? По-моему в телеграме было бы проще работать
-    public Epic(String name, String description) {
-        super(name, description, newStatus, epicId);
-        epicId++;
-        System.out.println("Работу начинает конструктор Epic");
-    }
     @Override
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         System.out.println("О-оу, господин. Такое делать запрещено");
     }
+
     @Override
     public void setId(Integer id) {
-        //хотел консольку подключить, чтобы оставлять за пользователем выбор, но вспоминл, шо низя консоль использовать))
         System.out.println("Изменение id эпика приведет к потере взаимосвязи сабтасков и эпиков.");
         this.id = id;
-    }
-    public Epic(String name, String description, int oldEpicID) {
-        super(name, description, "NEW", oldEpicID);
     }
 
     public void removeSubtask(Integer id){
@@ -43,43 +41,44 @@ public class Epic extends Task {
     public void addSubtask(Integer id){
         epicSubtasksList.add(id);
     }
+    //В принципе, тут можно перегрузить метод addSubtask, могу сделать
     public void linkSubtask(Subtask subtask) {
         epicSubtasksList.add(subtask.getId());
     }
 
-    //ЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫЫ
     public void checkAndUpdateStatus(HashMap<Integer, Subtask> subtasks) {
         int doneCount = 0;
         int newStatusCount = 0;
 
         for (Integer id : epicSubtasksList) {
             Subtask subtask = subtasks.get(id);
-           if (subtask.getStatus().equals(doneStatus)){
+            if (Status.DONE.equals(subtask.getStatus())){
                 doneCount++;
-           }
-           if (subtask.getStatus().equals(newStatus)){
+            }
+            if (Status.NEW.equals(subtask.getStatus())){
                 newStatusCount++;
            }
         }
-        if (doneCount == epicSubtasksList.size()){ //значит, если все сабтаски == done, тогда статус Эпика = done
-            this.status = doneStatus;
+        // если все сабтаски == done, тогда статус Эпика = done
+        // если все сабтаски == new или лист пустой, тогда статус эпика = new.
+        // иначе - статус ин_прогресс
+        if (doneCount == epicSubtasksList.size()){
+            this.status = Status.DONE;
         } else if (newStatusCount == epicSubtasksList.size() || epicSubtasksList.size() == 0){
-            //если все сабтаски == new или лист пустой, тогда статус эпика = new.
-            this.status = newStatus;
-        } else { //иначе - статус ин_прогресс
-            this.status = inProgressStatus;
+            this.status = Status.NEW;
+        } else {
+            this.status = Status.IN_PROGRESS;
         }
     }
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true; // проверяем адреса объектов
-        if (obj == null) return false; // проверяем ссылку на null
+        if (this == obj) return true;
+        if (obj == null) return false;
         if (this.getClass() != obj.getClass()) return false;
         Epic epic = (Epic) obj;
         return (Objects.equals(this.name, epic.getName()) && Objects.equals(this.description, epic.getDescription())
                 && Objects.equals(this.status, epic.getStatus()) && Objects.equals(this.id, epic.getId()));
     }
-
     @Override
     public String toString() {
         return "Epic = {name = '" + this.name + '\'' +

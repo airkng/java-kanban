@@ -1,21 +1,24 @@
-package manager;
+package ru.yandex.taskTracker.managers.taskManager;
 
-import tasks.Epic;
-import tasks.Subtask;
-import tasks.Task;
+import ru.yandex.taskTracker.tasks.Epic;
+import ru.yandex.taskTracker.tasks.Subtask;
+import ru.yandex.taskTracker.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-public class Manager implements IManager {
+public class TaskManager implements ITaskManager {
+    //ПРОЕКТ СЫРОЙ, МОЖЕШЬ ДАЖЕ НЕ СМОТРЕТЬ ПОКА
 
-    private HashMap<Integer, Epic> epics = new HashMap<>();
-    private HashMap<Integer, Task> tasks = new HashMap<>();
-    private HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    private final HashMap<Integer, Epic> epics = new HashMap<>();
+    private final HashMap<Integer, Task> tasks = new HashMap<>();
+    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
+    private final List<Task> historyList = new ArrayList<>();
     @Override
     public ArrayList<Task> getTasksList() {
-        //Спасибо за совет, очень лаконично красиво мило
+
         return new ArrayList<>(tasks.values());
     }
     @Override
@@ -104,7 +107,6 @@ public class Manager implements IManager {
         }
     }
 
-
     @Override
     public void updateTask(Task task) {
         //В таске должен быть айди старого таска, который мы заменяем на новый
@@ -116,21 +118,15 @@ public class Manager implements IManager {
     }
 
     @Override
-    //Воообще, задумка была следующая. При добавлении, удалении, либо при апдейте сабтаска либо при апдейте эпика, мы сразу
-    //вычисляем у него статус с помощью одного из метода
-    // и checkAndUpdateStatus
-    //Ну просто это же логично, как по-другому то)) ТОгда это не приложение получится, а фигня какая-то забагованная
-    //Тз для меня очень непонятные, как будто бы говорят сделать что-то мега масштабное,а на деле... пару простых методов написать. меее :(
-
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
-            Subtask oldSubtask = subtasks.get(subtask.getId()); //Достаем старый сабтаск
-            Epic epic = epics.get(oldSubtask.getEpicID()); //Достаем epic, в котором был этот сабтаск
-            epic.removeSubtask(oldSubtask.getId()); //убираем из листа в Epic этот сабтаск
-            epic.linkSubtask(subtask); //связываем текущий сабтаск с эпиком
-            epic.checkAndUpdateStatus(subtasks); //проверяем и меняем статус Epic если надо
-            //убрал эту строчку, согласен с тобой. Забыл ее убрать до проверки
-            subtasks.put(subtask.getId(), subtask); //добавляем новый
+
+            Subtask oldSubtask = subtasks.get(subtask.getId());     //Достаем старый сабтаск
+            Epic epic = epics.get(oldSubtask.getEpicID());          //Достаем epic, в котором был этот сабтаск
+            epic.removeSubtask(oldSubtask.getId());                 //убираем из листа в Epic этот сабтаск
+            epic.linkSubtask(subtask);                              //связываем текущий сабтаск с эпиком
+            epic.checkAndUpdateStatus(subtasks);                    //проверяем и меняем статус Epic если надо
+            subtasks.put(subtask.getId(), subtask);                 //добавляем новый
         } else {
             System.out.println("subtask не найден в списке HashMap");
         }
@@ -156,7 +152,7 @@ public class Manager implements IManager {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
         } else {
-            System.out.println("Ключа tasks " + id + " не существует");
+            System.out.println("Ключа task " + id + " не существует");
         }
     }
 
@@ -187,9 +183,6 @@ public class Manager implements IManager {
 
     @Override
     public ArrayList<Subtask> getEpicSubtasks(Integer id) {
-
-        //Вообще, я прекрасно понимаю, зачем нужно сеттеры ставить)) просто специально для багов оставил
-        // чтобы как раньше в Гта или Симс 3 коды вводить и вуаля! мы с бабками, оружием, телочками крутые дяди
         if(epics.containsKey(id)) {
             ArrayList<Integer> subtasksID = epics.get(id).getEpicSubtasksList();
             ArrayList<Subtask> subtasksList = new ArrayList<>();
@@ -201,5 +194,8 @@ public class Manager implements IManager {
         else {
             return null;
         }
+    }
+    public List<Task> getHistory(){
+        return null;
     }
 }

@@ -1,12 +1,12 @@
-package manager;
+package ru.yandex.taskTracker.managers.taskManager;
 
-import tasks.Epic;
-import tasks.Subtask;
-import tasks.Task;
+import ru.yandex.taskTracker.tasks.Epic;
+import ru.yandex.taskTracker.tasks.Subtask;
+import ru.yandex.taskTracker.tasks.Task;
 
 import java.util.ArrayList;
 
-public interface IManager {
+public interface ITaskManager {
     ArrayList<Task> getTasksList();
 
     ArrayList<Subtask> getSubtasksList();
