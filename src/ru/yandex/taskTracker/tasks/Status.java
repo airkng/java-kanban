@@ -1,7 +1,7 @@
 package ru.yandex.taskTracker.tasks;
 
 public enum Status {
-    //ПРОЕКТ СЫРОЙ, МОЖЕШЬ ДАЖЕ НЕ СМОТРЕТЬ ПОКА
+    //ПРОЕКТ СЫРОЙ, Можешь в принципе глянуть, я вроде только недопонял про Manager, мне надо дженерик создать что ли
     NEW,
     IN_PROGRESS,
     DONE;

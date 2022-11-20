@@ -9,7 +9,7 @@ import ru.yandex.taskTracker.tasks.Task;
 import java.util.List;
 
 public class Main {
-    //ПРОЕКТ СЫРОЙ, МОЖЕШЬ ДАЖЕ НЕ СМОТРЕТЬ ПОКА
+    //ПРОЕКТ СЫРОЙ, Можешь в принципе глянуть, я вроде только недопонял про Manager, мне надо дженерик создать что ли
 
     public static void main(String[] args) {
         TaskManagerI taskManager = new TaskManagerI();
