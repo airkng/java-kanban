@@ -5,6 +5,7 @@ import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface ITaskManager {
     ArrayList<Task> getTasksList();
@@ -44,5 +45,7 @@ public interface ITaskManager {
     void deleteEpicById(Integer id);
 
     ArrayList<Subtask> getEpicSubtasks(Integer id);
+
+    List<Task> getHistory();
 
 }

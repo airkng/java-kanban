@@ -1,5 +1,7 @@
 package ru.yandex.taskTracker.managers.taskManager;
 
+import ru.yandex.taskTracker.managers.Managers;
+import ru.yandex.taskTracker.managers.historyManager.HistoryManager;
 import ru.yandex.taskTracker.managers.historyManager.IHistoryManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Subtask;
@@ -9,14 +11,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class TaskManagerI implements ITaskManager, IHistoryManager {
+public class TaskManager implements ITaskManager {
 
 
     private final HashMap<Integer, Epic> epics = new HashMap<>();
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
-    private final List<Task> historyList = new ArrayList<>();
+    private final IHistoryManager<Task> history = Managers.getHistoryManager();
 
     @Override
     public ArrayList<Task> getTasksList() {
@@ -51,7 +53,7 @@ public class TaskManagerI implements ITaskManager, IHistoryManager {
     public Task getTask(Integer id) {
         Task task = tasks.getOrDefault(id, null);
         if(task != null){
-            add(task);
+            history.addHistory(task);
         }
         return task;
     }
@@ -60,7 +62,7 @@ public class TaskManagerI implements ITaskManager, IHistoryManager {
     public Subtask getSubtask(Integer id) {
         Task subtask = subtasks.getOrDefault(id, null);
         if(subtask != null){
-            add(subtask);
+            history.addHistory(subtask);
         }
         return subtasks.getOrDefault(id, null);
     }
@@ -69,7 +71,7 @@ public class TaskManagerI implements ITaskManager, IHistoryManager {
     public Epic getEpic(Integer id) {
         Task epic = epics.getOrDefault(id, null);
         if(epic != null){
-            add(epic);
+            history.addHistory(epic);
         }
         return epics.getOrDefault(id, null);
     }
@@ -210,23 +212,7 @@ public class TaskManagerI implements ITaskManager, IHistoryManager {
     }
 
     @Override
-    public void add(Task task) {
-        if(historyList.size() < 10){
-            historyList.add(task);
-        }
-        else{
-            historyList.remove(0);
-            historyList.add(task);
-        }
-    }
-    @Override
     public List<Task> getHistory(){
-        if(historyList.size() > 0){
-            return historyList;
-        }
-        else {
-            System.out.println("История пуста.");
-            return null;
-        }
+        return history.getHistory();
     }
 }

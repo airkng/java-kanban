@@ -5,20 +5,22 @@ import ru.yandex.taskTracker.tasks.Task;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HistoryManager implements IHistoryManager {
-    private final List<Task> historyList = new ArrayList<>();
+public class HistoryManager<T> implements IHistoryManager<T> {
+    private final List<T> historyList = new ArrayList<>();
+
     @Override
-    public void add(Task task) {
+    public void addHistory(T element) {
         if(historyList.size() < 10){
-            historyList.add(task);
+            historyList.add(element);
         }
         else{
             historyList.remove(0);
-            historyList.add(task);
+            historyList.add(element);
         }
     }
+
     @Override
-    public List<Task> getHistory(){
+    public List<T> getHistory(){
         if(historyList.size() > 0){
             return historyList;
         }

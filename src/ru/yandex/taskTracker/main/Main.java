@@ -1,6 +1,7 @@
 package ru.yandex.taskTracker.main;
 
-import ru.yandex.taskTracker.managers.taskManager.TaskManagerI;
+import ru.yandex.taskTracker.managers.Managers;
+import ru.yandex.taskTracker.managers.taskManager.ITaskManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
@@ -9,32 +10,42 @@ import ru.yandex.taskTracker.tasks.Task;
 import java.util.List;
 
 public class Main {
-    //ПРОЕКТ СЫРОЙ, Можешь в принципе глянуть, я вроде только недопонял про Manager, мне надо дженерик создать что ли
+
 
     public static void main(String[] args) {
-        TaskManagerI taskManager = new TaskManagerI();
+        ITaskManager taskManager = Managers.getDefault();
+        //Создание тасков
         Task autoTask = new Task("Auto", "Buy auto", Status.NEW);
         Task autoTaskOneMore = new Task("Auto", "Buy auto", Status.DONE);
         Task autoTaskCopy = new Task("Auto", "Buy auto", Status.DONE);
-
         Task business = new Task("Business", "investing in Binance", Status.IN_PROGRESS);
 
+        //добавление в мапу
         int id1 = taskManager.addTask(autoTask);              //добавится
         int id2 = taskManager.addTask(autoTaskOneMore);       //тоже добавится
         int idOfCopy = taskManager.addTask(autoTaskCopy);     //не добавится
         int idBusiness = taskManager.addTask(business);       //добавится
+
+        System.out.println("Вывод листа тасков. Переменная tasks");
         List<Task> tasks = taskManager.getTasksList();
         System.out.println(tasks);
-        autoTask.setId(1234);   //изменится в мапе тоже
+
+        autoTask.setId(1234);   //изменится как объект, так и мапа в taskManager
         System.out.println();
         System.out.println(taskManager.getTasksList()); //убедились в вышесказанном
         System.out.println();
+        System.out.println("Вывод листа тасков. Переменная tasks");
+        System.out.println(tasks); // тут тоже изменилось
         System.out.println();
 
+        System.out.println("Создание эпиков:");
         Epic homeBuild = new Epic("build a home", "building and buying house");
         int homeBuildID = taskManager.addEpic(homeBuild);
         Epic movement = new Epic("movement", "movement from Russia to Bali");
         int movementID = taskManager.addEpic(movement);
+
+        taskManager.addEpic(homeBuild); //не добавится, так как выше уже создали Эпик
+        taskManager.addEpic(movement); //аналогично
 
         Subtask fundament = new Subtask("buy fundament", "find store and buy fundament", Status.NEW, homeBuildID);
         int fundamentID = taskManager.addSubtask(fundament); //добавится
@@ -51,8 +62,7 @@ public class Main {
         movementSubt.setName("ticket");
         movementSubt.setDescription("airline ticket to Bali");
 
-        taskManager.addEpic(homeBuild); //не добавится, так как выше уже создали Эпик
-        taskManager.addEpic(movement); //аналогично
+
         System.out.println(taskManager.getEpicList());
         System.out.println(taskManager.getSubtasksList());
 

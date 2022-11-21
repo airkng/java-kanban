@@ -4,7 +4,7 @@ import ru.yandex.taskTracker.tasks.Task;
 
 import java.util.List;
 
-public interface IHistoryManager {
-    void add(Task task);
-    List<Task> getHistory();
+public interface IHistoryManager<T> {
+    void addHistory(T element);
+    List<T> getHistory();
 }

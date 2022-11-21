@@ -68,7 +68,7 @@ public class Task {
     }
 
     protected static int generateID(String name, String description, Status status) {
-        int hash = Objects.hash(name, description, status); //Корректно ли сюда засовывать Enum?
+        int hash = Objects.hash(name, description, status); //Корректно ли сюда засовывать Enum? Думаю, ничего плохого
         hash += count;
         return hash;
     }
@@ -87,9 +87,9 @@ public class Task {
         if (obj == null) return false;
         if (this.getClass() != obj.getClass()) return false;
         Task task = (Task) obj;
-        return  Objects.equals(this.name, task.getName()) &&    //проверка имен
+        return  Objects.equals(this.name, task.getName()) &&               //проверка имен
                 Objects.equals(this.description, task.getDescription()) && // проверка описания
-                (this.status == task.getStatus()); //проверка статуса.
+                (this.status == task.getStatus());                         //проверка статуса.
         // Хз как лучше проверить, через equals, == или Objects.equals
         //Думаю, все-таки через Objects.equals() было бы получше, из-за читабельности
     }
