@@ -1,17 +1,17 @@
 package ru.yandex.taskTracker.managers;
 
+import ru.yandex.taskTracker.managers.historyManager.InMemoryHistoryManager;
 import ru.yandex.taskTracker.managers.historyManager.HistoryManager;
-import ru.yandex.taskTracker.managers.historyManager.IHistoryManager;
-import ru.yandex.taskTracker.managers.taskManager.ITaskManager;
 import ru.yandex.taskTracker.managers.taskManager.TaskManager;
+import ru.yandex.taskTracker.managers.taskManager.InMemoryTaskManager;
 
 public class Managers {
 
-    static public ITaskManager getDefault() {
-        return new TaskManager();
+    static public TaskManager getDefault() {
+        return new InMemoryTaskManager();
     }
 
-    static public IHistoryManager getHistoryManager() {
-        return new HistoryManager<>();
+    static public HistoryManager getHistoryManager() {
+        return new InMemoryHistoryManager<>();
     }
 }

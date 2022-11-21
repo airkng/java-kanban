@@ -1,7 +1,7 @@
 package ru.yandex.taskTracker.main;
 
 import ru.yandex.taskTracker.managers.Managers;
-import ru.yandex.taskTracker.managers.taskManager.ITaskManager;
+import ru.yandex.taskTracker.managers.taskManager.TaskManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
@@ -13,7 +13,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        ITaskManager taskManager = Managers.getDefault();
+        TaskManager taskManager = Managers.getDefault();
         //Создание тасков
         Task autoTask = new Task("Auto", "Buy auto", Status.NEW);
         Task autoTaskOneMore = new Task("Auto", "Buy auto", Status.DONE);
