@@ -12,6 +12,6 @@ public class Managers {
     }
 
     static public HistoryManager getHistoryManager() {
-        return new InMemoryHistoryManager<>();
+        return new InMemoryHistoryManager();
     }
 }
