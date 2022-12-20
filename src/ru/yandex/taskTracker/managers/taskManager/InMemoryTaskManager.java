@@ -16,17 +16,18 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
 
-    private final HistoryManager<Task> history = Managers.getHistoryManager();
+    private final HistoryManager history = Managers.getHistoryManager();
 
     @Override
     public ArrayList<Task> getTasksList() {
-
         return new ArrayList<>(tasks.values());
     }
+
     @Override
     public ArrayList<Subtask> getSubtasksList() {
         return new ArrayList<>(subtasks.values());
     }
+
     @Override
     public ArrayList<Epic> getEpicList() {
         return new ArrayList<>(epics.values());
@@ -130,6 +131,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
+
     @Override
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
@@ -164,6 +166,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteTaskById(Integer id) {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
+            history.remove(id);
         } else {
             System.out.println("Ключа task " + id + " не существует");
         }
@@ -177,18 +180,22 @@ public class InMemoryTaskManager implements TaskManager {
             epic.removeSubtask(deletedSubtask.getId());
             epic.checkAndUpdateStatus(subtasks); // проверяем статус Эпика
             subtasks.remove(id);
+            history.remove(id);
         } else {
             System.out.println("Ключа subtask " + id + " не существует");
         }
     }
+
     @Override
     public void deleteEpicById(Integer id) {
         if (epics.containsKey(id)) {
             ArrayList<Integer> subtasksID = epics.get(id).getEpicSubtasksList();
             for (Integer key : subtasksID) {
                 subtasks.remove(key);
+                history.remove(key);
             }
             epics.remove(id);
+            history.remove(id);
         } else {
             System.out.println("Ключа epic " + id + " не существует");
         }
