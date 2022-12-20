@@ -80,23 +80,45 @@ public class Main {
         taskManager.deleteTaskById(id1); // удалили таск
         System.out.println(taskManager.getTasksList());
 
-        System.out.println(taskManager.getTask(id2));
-        System.out.println(taskManager.getTask(idBusiness));
-        System.out.println(taskManager.getEpic(movementID));
-        System.out.println(taskManager.getSubtask(movementSubID));
 
-        System.out.println(taskManager.getTask(id2));
-        System.out.println(taskManager.getTask(idBusiness));
-        System.out.println(taskManager.getEpic(movementID));
-        System.out.println(taskManager.getSubtask(movementSubID));
 
-        System.out.println(taskManager.getTask(id2));
-        System.out.println(taskManager.getTask(idBusiness));
-        System.out.println(taskManager.getEpic(movementID));
-        System.out.println(taskManager.getSubtask(movementSubID));
 
-        System.out.println("История: \n");
-        System.out.println(taskManager.getHistory());
+
+        //test 5
+        Task task1 = new Task("Book", "Buy autoBook", Status.NEW);
+        Task task2 = new Task("Study", "learn java lang", Status.IN_PROGRESS);
+        int taskid1 = taskManager.addTask(task1);
+        int taskid2 = taskManager.addTask(task2);
+
+        Epic epic1 = new Epic("home", "building and buying house");
+        int epic1ID = taskManager.addEpic(epic1);
+
+        Epic epic2 = new Epic("movement", "movement from Russia to Bali");
+        int epic2ID = taskManager.addEpic(epic2);
+
+        Subtask sub1 = new Subtask("buy fundament", "find store and buy fundament", Status.NEW, epic1ID);
+        int sub1ID = taskManager.addSubtask(sub1);
+
+        Subtask sub2 = new Subtask("Create plan", "smthingt", Status.NEW, epic1ID);
+        int sub2ID = taskManager.addSubtask(sub2);
+
+        Subtask sub3 = new Subtask("Workers", "find a worker for building", Status.IN_PROGRESS, epic1ID);
+        int sub3ID = taskManager.addSubtask(sub3);
+
+        taskManager.getTask(taskid1);
+        taskManager.getTask(taskid2);
+        taskManager.getEpic(epic1ID);
+        taskManager.getEpic(epic2ID);
+        taskManager.getSubtask(sub1ID);
+        taskManager.getSubtask(sub2ID);
+        taskManager.getSubtask(sub3ID);
+        taskManager.getTask(taskid1);
+
+        System.out.println("История: \n" + taskManager.getHistory());
+        taskManager.deleteTaskById(taskid1);
+        taskManager.deleteEpicById(epic1ID);
+        System.out.println("История: \n" + taskManager.getHistory());
+
 
     }
 }
