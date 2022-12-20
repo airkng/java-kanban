@@ -24,7 +24,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     @Override
-    public List<Task> getHistory(){
+    public List<Task> getHistory() {
         return customLinkedList.getTaskList();
     }
 
@@ -35,31 +35,37 @@ public class InMemoryHistoryManager implements HistoryManager {
 
 
 }
- class CustomLinkedList {
+
+class CustomLinkedList {
     private final HashMap<Integer, CustomLinkedList.Node> historyMap = new HashMap<>();
     private Node head = null;
     private Node tail = null;
     int size = 0;
 
-    public ArrayList<Task> getTaskList(){
+    public ArrayList<Task> getTaskList() {
         ArrayList<Task> historyList = new ArrayList<>();
         Node currentNode = head;
-        while (currentNode != null){
+        while (currentNode != null) {
             historyList.add(currentNode.data);
             currentNode = currentNode.next;
         }
         return historyList;
     }
+    // Что самое ужасное, в вашей работе?
+    // - нуу, когда дети шумят, - ответил учитель
+    // - нет, самое ужасное, когда нужно сдвинуть кнопку на пиксель влево, - ответил ux-ui дизайнер
+    // С черными глазами и дрожашим голосом отвечает джавист - "Когда дебажишь два с половиной часа и не находишь ошибку.
+    // А оказывается, что нужно было написать вызов команды на строчку позже..." Все сидели молча..
 
-     void addElement(Task task){
-         if (historyMap.containsKey(task.getId())){
-             removeElement(task.getId());
-         }
-         link(task);
-     }
+    void addElement(Task task) {
+        if (historyMap.containsKey(task.getId())) {
+            removeElement(task.getId());
+        }
+        link(task);
+    }
 
-     void removeElement(int id){
-        if(historyMap.containsKey(id)) {
+    void removeElement(int id) {
+        if (historyMap.containsKey(id)) {
             unlink(historyMap.get(id));
             historyMap.remove(id);
             size--;
@@ -67,11 +73,11 @@ public class InMemoryHistoryManager implements HistoryManager {
             System.out.println("В истории не обнаружено ключа " + id);
             return;
         }
-     }
+    }
 
-    private void link(Task task){
+    private void link(Task task) {
         Node node = new Node(task);
-        if (head == null && tail == null){
+        if (head == null && tail == null) {
             head = node;
             tail = node;
             historyMap.put(task.getId(), node);
@@ -82,27 +88,27 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     }
 
-    private void linkLast(Task task){
-         Node newTail = new Node(task);
-         Node oldTail = tail;
-         oldTail.next = newTail;
-         newTail.prev = oldTail;
-         tail = newTail;
-         historyMap.put(task.getId(), newTail);
+    private void linkLast(Task task) {
+        Node newTail = new Node(task);
+        Node oldTail = tail;
+        oldTail.next = newTail;
+        newTail.prev = oldTail;
+        tail = newTail;
+        historyMap.put(task.getId(), newTail);
     }
 
-    private void unlink(Node nodeToRemove){
+    private void unlink(Node nodeToRemove) {
         final Node prev = nodeToRemove.prev;
         final Node next = nodeToRemove.next;
 
-        if (prev == null){
+        if (prev == null) {
             head = next;
         } else {
             prev.next = next;
             nodeToRemove.prev = null;
         }
 
-        if (next == null){
+        if (next == null) {
             tail = prev;
         } else {
             next.prev = prev;
@@ -112,6 +118,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         nodeToRemove.data = null;
     }
 
+    //Вижу фронтендера - сразу хейчу, даже не спрашиваю его
     private class Node {
         private Task data;
         private Node prev;

@@ -51,7 +51,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTask(Integer id) {
         Task task = tasks.getOrDefault(id, null);
-        if(task != null){
+        if (task != null) {
             history.addHistory(task);
         }
         return task;
@@ -60,7 +60,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask getSubtask(Integer id) {
         Task subtask = subtasks.getOrDefault(id, null);
-        if(subtask != null){
+        if (subtask != null) {
             history.addHistory(subtask);
         }
         return subtasks.getOrDefault(id, null);
@@ -69,7 +69,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Epic getEpic(Integer id) {
         Task epic = epics.getOrDefault(id, null);
-        if(epic != null){
+        if (epic != null) {
             history.addHistory(epic);
         }
         return epics.getOrDefault(id, null);
@@ -203,21 +203,20 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public ArrayList<Subtask> getEpicSubtasks(Integer id) {
-        if(epics.containsKey(id)) {
+        if (epics.containsKey(id)) {
             ArrayList<Integer> subtasksID = epics.get(id).getEpicSubtasksList();
             ArrayList<Subtask> subtasksList = new ArrayList<>();
             for (Integer key : subtasksID) {
                 subtasksList.add(subtasks.get(key));
             }
             return subtasksList;
-        }
-        else {
+        } else {
             return null;
         }
     }
 
     @Override
-    public List<Task> getHistory(){
+    public List<Task> getHistory() {
         return history.getHistory();
     }
 }
