@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
+    //Я уже видимо совсем рехнулся...ахахх, не запушить файлы основные, ужс,ахах
     private final Path path;
     //Реальная история. Коротко о разработчиках MicroSoft:
     //когда разработчики Microsoft убрали из Windows игру Pinball, потому что не смогли портировать
