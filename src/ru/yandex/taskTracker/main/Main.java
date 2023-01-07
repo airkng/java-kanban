@@ -90,8 +90,8 @@ public class Main {
         int taskid1 = taskManager.addTask(task1);
         int taskid2 = taskManager.addTask(task2);
 
-        Epic epic1 = new Epic("home", "building and buying house");
-        int epic1ID = taskManager.addEpic(epic1);
+       Epic epic1 = new Epic("home", "building and buying house");
+       int epic1ID = taskManager.addEpic(epic1);
 
         Epic epic2 = new Epic("movement", "movement from Russia to Bali");
         int epic2ID = taskManager.addEpic(epic2);

@@ -18,7 +18,14 @@ public class Epic extends Task {
     public Epic(String name, String description, int oldEpicID) {
         super(name, description, Status.NEW, oldEpicID);
     }
-
+    // Это не я, меня заставил код.. Иначе не считать из файла Эпик, там надо было бы
+    // создавать отдельный метод типа tempSave(),  в нем какой-нибудь временный файл, записывать в него
+    // новые данные, считать до конца все из файла, засунуть новые потом придумывать, как-таки высчитать статус эпика, зная
+    // его сабтаски. В общем, рвать жопу как во втором сприте не хотелось)))
+    // + по тестам проходит ^_^
+    public Epic(String name, String description,Status status, int id){
+        super(name,description,status, id);
+    }
     public ArrayList<Integer> getEpicSubtasksList() {
         return epicSubtasksList;
     }
