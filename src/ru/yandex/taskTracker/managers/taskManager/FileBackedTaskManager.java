@@ -1,6 +1,5 @@
 package ru.yandex.taskTracker.managers.taskManager;
 
-import ru.yandex.taskTracker.managers.historyManager.HistoryManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
@@ -12,20 +11,19 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
-    //Я уже видимо совсем рехнулся...ахахх, не запушить файлы основные, ужс,ахах
+public class FileBackedTaskManager extends InMemoryTaskManager {
+
     private final Path path;
+
     //Реальная история. Коротко о разработчиках MicroSoft:
     //когда разработчики Microsoft убрали из Windows игру Pinball, потому что не смогли портировать
     // ее на 64-х разрядную архитектуру. Причем у них даже были ее исходники. Просто они не могли понять,
     // как работает написанный код.
 
     public static void main(String[] args) {
-        FileBackedTaskManager taskManager = new FileBackedTaskManager("testDir\\test.csv");
+        TaskManager taskManager = new FileBackedTaskManager("testDir\\test.csv");
 
         System.out.println("Создание тасков");
         Task task1 = new Task("Book", "Buy autoBook", Status.NEW);
@@ -57,23 +55,24 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         taskManager.getSubtask(sub1ID);
         taskManager.getSubtask(sub2ID);
         taskManager.getSubtask(sub3ID);
-        taskManager.getTask(taskid1);
+        //taskManager.getTask(taskid1);
 
         System.out.println("История: \n" + taskManager.getHistory());
         //taskManager.deleteTaskById(taskid1);
 
-        FileBackedTaskManager taskLoaderManager = FileBackedTaskManager.loadFromFile(Path.of("testDir\\test.csv"));
+        TaskManager taskLoaderManager = FileBackedTaskManager.loadFromFile(Path.of("testDir\\test.csv"));
         System.out.println("Сабтаски загруженные из файла");
-        System.out.println(taskManager.getSubtaskAsList());
+        System.out.println(taskLoaderManager.getSubtasksList());
         System.out.println("Эпики загруженные из файла");
-        System.out.println(taskManager.getEpicsAsStringList());
+        System.out.println(taskLoaderManager.getEpicList());
         System.out.println("Таски из файла");
-        System.out.println(taskManager.getTasksAsStringList());
+        System.out.println(taskLoaderManager.getTasksList());
         System.out.println("История из файла:");
         System.out.println(taskManager.getHistory());
     }
 
-    public FileBackedTaskManager(String file) {
+    private FileBackedTaskManager(String file) {
+        //заприватил конструктор
         path = Paths.get(file);
     }
 
@@ -88,13 +87,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         super.deleteSubtasks();
         save();
     }
-    //С Новым Годом, Рождеством! Надеюсь алкоголь уже выветрился и Александр Валюк с новыми силами ворвался в новый год
+
+    // желаю твоей печени здоровья
     @Override
     public void deleteEpic() {
         super.deleteEpic();
         save();
     }
 
+    // и сердцу, зная сколько боли ты испытываешь при проверке работ учеников ЯП
     @Override
     public Task getTask(Integer id) {
         Task task = super.getTask(id);
@@ -108,17 +109,19 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         save();
         return sub;
     }
-    // Как дела?
+
     @Override
     public Epic getEpic(Integer id) {
         Epic epic = super.getEpic(id);
         save();
         return epic;
     }
+
     //Жизнь боль, это когда ты отлаживаешь код, у тебя выходит ошибка компиляции при создании файла, ты
     //отдебаживаешь его полтора часа, пишешь тотже самый код в другом файле другого проекта и он сука работает
     //А в этом проекте нет, в итоге колдуешь 20-30 минут, вспоминаешь остаточные знания из Хогвардста и отправляешь
     // Александру Дамблдору на проверку
+
     @Override
     public int addTask(Task task) {
         int id = super.addTask(task);
@@ -190,12 +193,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private void saveExistFile() throws IOException {
-        List<String> dataList = new ArrayList<>();
-        String title = "id,Type,Name,Status,Description,Epic";
-        dataList.add(title);
-        dataList.addAll(getTasksAsStringList());
-        dataList.addAll(getEpicsAsStringList());
-        dataList.addAll(getSubtaskAsList());
+        List<String> dataList = GlobalTaskConverter.getDataStringList(tasks, epics, subtasks);
         try (Writer fileWriter = new FileWriter(path.toFile())) {
             for (String data : dataList) {
                 fileWriter.write(data + "\n");
@@ -216,91 +214,43 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private void saveHistory() throws IOException {
-        try (FileWriter historyWritter = new FileWriter(path.toFile(), true)) {
-            historyWritter.write("\n");
-            List<String> historyData = historyToString(history);
+        try (FileWriter historyWriter = new FileWriter(path.toFile(), true)) {
+            historyWriter.write("\n");
+            List<String> historyData = GlobalTaskConverter.historyToString(history);
             for (String historyDatum : historyData) {
-                historyWritter.write(historyDatum);
+                historyWriter.write(historyDatum);
             }
         }
     }
 
-    private static List<String> historyToString(HistoryManager manager) {
-        List<Task> taskHistory = manager.getHistory();
-        List<String> stringHistory = new ArrayList<>();
-        for (Task task : taskHistory) {
-            stringHistory.add(task.getId() + ",");
-        }
-        return stringHistory;
-    }
 
-    private List<String> getTasksAsStringList() {
-        List<String> taskDataList = new ArrayList<>();
-        for (Map.Entry<Integer, Task> entry : tasks.entrySet()) {
-            String taskData = toString(entry.getValue());
-            taskDataList.add(taskData);
-        }
-        return taskDataList;
-    }
-
-    private List<String> getEpicsAsStringList() {
-        List<String> epicDataList = new ArrayList<>();
-        for (Map.Entry<Integer, Epic> entry : epics.entrySet()) {
-            String epicData = toString(entry.getValue());
-            epicDataList.add(epicData);
-        }
-        return epicDataList;
-    }
-
-    private List<String> getSubtaskAsList() {
-        List<String> subtaskDataList = new ArrayList<>();
-        for (Map.Entry<Integer, Subtask> entry : subtasks.entrySet()) {
-            String subtaskData = toString(entry.getValue());
-            subtaskDataList.add(subtaskData);
-        }
-        return subtaskDataList;
-    }
-
-    private String toString(Object obj) {
-        if (obj instanceof Subtask) {
-            Subtask subtask = (Subtask) obj;
-            return subtask.getId() + "," + TaskType.SUBTASK + "," + subtask.getName() + ","
-                    + subtask.getStatus() + "," + subtask.getDescription() + "," + subtask.getEpicID();
-        } else if (obj instanceof Epic) {
-            Epic epic = (Epic) obj;
-            return epic.getId() + "," + TaskType.EPIC + "," + epic.getName() + ","
-                    + epic.getStatus() + "," + epic.getDescription() + ",";
-        } else if (obj instanceof Task) {
-            Task task = (Task) obj;
-            return task.getId() + "," + TaskType.TASK + "," + task.getName() + ","
-                    + task.getStatus() + "," + task.getDescription() + ",";
-        } else {
-            throw new IllegalArgumentException("На вход подан неверный класс");
-        }
-    }
-
-    private static FileBackedTaskManager loadFromFile(Path path) {
-
+    public static FileBackedTaskManager loadFromFile(Path path) {
+        //Я правильно понимаю, что ты хочешь заприватить конструктор, и чтобы можно было создавать файл-менеджер только
+        // и только с помощью этого метода? Заприватил в общем конструктор, теперь объект типа FileBackedManager можно
+        // создать только с помощью этого метода
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path.toString());
         try {
             List<String> dataList = Files.readAllLines(path);
             int i = 1;
             while (!dataList.get(i).isEmpty()) {
                 String textTask = dataList.get(i);
-                Task task = fileManager.taskFromString(textTask);
-                if (task instanceof Epic) {
+                Task task = GlobalTaskConverter.taskFromString(textTask);
+                String typeOfTask = textTask.split(",")[1];
+                if (TaskType.EPIC.toString().equals(typeOfTask)) {
                     fileManager.epics.put(task.getId(), (Epic) task);
-                } else if (task instanceof Subtask) {
+                } else if (TaskType.SUBTASK.toString().equals(typeOfTask)) {
                     fileManager.subtasks.put(task.getId(), (Subtask) task);
-                } else {
+                } else if (TaskType.TASK.toString().equals(typeOfTask)) {
                     fileManager.tasks.put(task.getId(), task);
+                } else {
+                    throw new ManagerSaveException("неверный тип таска в файле");
                 }
                 i++;
             }
             if (i == dataList.size() - 1) {
                 System.out.println("Истории нет");
             } else {
-                List<Integer> historyTasksIdList = historyFromString(dataList.get(dataList.size() - 1));
+                List<Integer> historyTasksIdList = GlobalTaskConverter.historyFromString(dataList.get(dataList.size() - 1));
                 for (Integer id : historyTasksIdList) {
                     if (fileManager.getTask(id) != null) fileManager.history.addHistory(fileManager.getTask(id));
                     if (fileManager.getEpic(id) != null) fileManager.history.addHistory(fileManager.getEpic(id));
@@ -314,42 +264,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         return fileManager;
     }
 
-    private Task taskFromString(String list) {
-        String[] stringData = list.split(",");
-        if (stringData.length > 7) {
-            throw new ManagerSaveException("Неверное оформление файла: Указано большое количество запятых");
-        }
-        int id = Integer.parseInt(stringData[0]);
-        String name = stringData[2];
-        Status status = getTaskStatus(stringData[3]);
-        String description = stringData[4];
-
-        if (stringData[1].equals(TaskType.TASK.toString())) {
-            return new Task(name, description, status, id);
-        } else if (stringData[1].equals(TaskType.EPIC.toString())) {
-            return new Epic(name, description, status, id);
-        } else if (stringData[1].equals(TaskType.SUBTASK.toString())) {
-            return new Subtask(name, description, status, id, Integer.parseInt(stringData[5]));
-        } else {
-            throw new ManagerSaveException("неверный тип таска в файле");
-        }
-    }
-
-    private Status getTaskStatus(String strStatus) {
-        for (Status status : Status.values()) {
-            if (strStatus.equals(status.toString())) return status;
-        }
-        throw new ManagerSaveException("Невозможно сравнить Enum статус");
-    }
-
-    private static List<Integer> historyFromString(String value) {
-        List<Integer> intValuesList = new ArrayList<>();
-        String[] values = value.split(",");
-        for (String s : values) {
-            Integer intValue = Integer.parseInt(s);
-            intValuesList.add(intValue);
-        }
-        return intValuesList;
-    }
 
 }
+
