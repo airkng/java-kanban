@@ -1,4 +1,4 @@
-package ru.yandex.taskTracker.managers.taskManager;
+package ru.yandex.taskTracker.managers.taskManager.fileManager;
 
 import ru.yandex.taskTracker.managers.historyManager.HistoryManager;
 import ru.yandex.taskTracker.tasks.Epic;
@@ -10,16 +10,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GlobalTaskConverter {
+public class CsvTaskConverter {
 
-    public static ArrayList<String> getDataStringList(Map<Integer, Task> tasks, Map<Integer, Epic> epics, Map<Integer,Subtask> subtasks){
+    public static ArrayList<String> getDataAsStringList(Map<Integer, Task> tasks, Map<Integer, Epic> epics, Map<Integer,
+            Subtask> subtasks, HistoryManager history) {
         ArrayList<String> dataList = new ArrayList<>();
         String title = "id,Type,Name,Status,Description,Epic";
         dataList.add(title);
         dataList.addAll(getTasksAsStringList(tasks));
         dataList.addAll(getEpicsAsStringList(epics));
-        dataList.addAll(getSubtaskAsList(subtasks));
+        dataList.addAll(getSubtaskAsStringList(subtasks));
+        dataList.add(getHistoryAsStringLine(history));
         return dataList;
+
+        //Не, в данном случае все-таки лучше не буду рефакторить, так как мне кажется это чем-то напоминает антипаттерн
+        //божественный метод. + придется убирать, переимновывать методы, параметры менять, меее :( ненавижу рефакторить
+        //мне кажется это одно из самых нелюбимых у проггеров
+        //я передумал. Сделал ^_^
     }
 
     private static List<String> getTasksAsStringList(Map<Integer, Task> tasks) {
@@ -40,13 +47,24 @@ public class GlobalTaskConverter {
         return epicDataList;
     }
 
-    private static List<String> getSubtaskAsList(Map<Integer,Subtask> subtasks) {
+    private static List<String> getSubtaskAsStringList(Map<Integer,Subtask> subtasks) {
         List<String> subtaskDataList = new ArrayList<>();
         for (Subtask subtask : subtasks.values()) {
             String subtaskData = toString(subtask);
             subtaskDataList.add(subtaskData);
         }
         return subtaskDataList;
+    }
+
+    private static String getHistoryAsStringLine(HistoryManager manager) {
+        List<Task> taskHistory = manager.getHistory();
+        StringBuilder historyLine = new StringBuilder();
+        historyLine.append("\n");
+
+        for (Task task : taskHistory) {
+            historyLine.append(task.getId() + ",");
+        }
+        return historyLine.toString();
     }
 
     private static String toString(Subtask subtask){
@@ -62,15 +80,6 @@ public class GlobalTaskConverter {
     private static String toString(Task task){
         return task.getId() + "," + TaskType.TASK + "," + task.getName() + ","
                 + task.getStatus() + "," + task.getDescription() + ",";
-    }
-
-    public static List<String> historyToString(HistoryManager manager) {
-        List<Task> taskHistory = manager.getHistory();
-        List<String> stringHistory = new ArrayList<>();
-        for (Task task : taskHistory) {
-            stringHistory.add(task.getId() + ",");
-        }
-        return stringHistory;
     }
 
     public static Task taskFromString(String list) {
@@ -96,11 +105,7 @@ public class GlobalTaskConverter {
 
     private static Status getTaskStatus(String strStatus) {
         for (Status status : Status.values()) {
-            // Твои любимые СКОБОЧКИ
-            // Видимо разработчики делятся на два типа:
-            // те, кто не ставят скобочки при ОДНОМ условии
-            // и те, кто их хейтит
-            if (strStatus.equals(status.name())){
+            if (strStatus.equals(status.name())) { //ЫЫЫЫЫЫЫЫ
                 return status;
             }
         }

@@ -1,5 +1,7 @@
-package ru.yandex.taskTracker.managers.taskManager;
+package ru.yandex.taskTracker.managers.taskManager.fileManager;
 
+import ru.yandex.taskTracker.managers.taskManager.InMemoryTaskManager;
+import ru.yandex.taskTracker.managers.taskManager.TaskManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
@@ -117,11 +119,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return epic;
     }
 
-    //Жизнь боль, это когда ты отлаживаешь код, у тебя выходит ошибка компиляции при создании файла, ты
-    //отдебаживаешь его полтора часа, пишешь тотже самый код в другом файле другого проекта и он сука работает
-    //А в этом проекте нет, в итоге колдуешь 20-30 минут, вспоминаешь остаточные знания из Хогвардста и отправляешь
-    // Александру Дамблдору на проверку
-
     @Override
     public int addTask(Task task) {
         int id = super.addTask(task);
@@ -186,14 +183,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             } else {
                 saveNonExistFile();
             }
-            saveHistory();
         } catch (IOException e) {
             throw new ManagerSaveException();
         }
     }
 
     private void saveExistFile() throws IOException {
-        List<String> dataList = GlobalTaskConverter.getDataStringList(tasks, epics, subtasks);
+        List<String> dataList = CsvTaskConverter.getDataAsStringList(tasks, epics, subtasks, history);
         try (Writer fileWriter = new FileWriter(path.toFile())) {
             for (String data : dataList) {
                 fileWriter.write(data + "\n");
@@ -213,29 +209,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    private void saveHistory() throws IOException {
-        try (FileWriter historyWriter = new FileWriter(path.toFile(), true)) {
-            historyWriter.write("\n");
-            List<String> historyData = GlobalTaskConverter.historyToString(history);
-            for (String historyDatum : historyData) {
-                historyWriter.write(historyDatum);
-            }
-        }
-    }
-
-
     public static FileBackedTaskManager loadFromFile(Path path) {
-        //Я правильно понимаю, что ты хочешь заприватить конструктор, и чтобы можно было создавать файл-менеджер только
-        // и только с помощью этого метода? Заприватил в общем конструктор, теперь объект типа FileBackedManager можно
-        // создать только с помощью этого метода
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path.toString());
         try {
             List<String> dataList = Files.readAllLines(path);
             int i = 1;
             while (!dataList.get(i).isEmpty()) {
                 String textTask = dataList.get(i);
-                Task task = GlobalTaskConverter.taskFromString(textTask);
+                Task task = CsvTaskConverter.taskFromString(textTask);
                 String typeOfTask = textTask.split(",")[1];
+
                 if (TaskType.EPIC.toString().equals(typeOfTask)) {
                     fileManager.epics.put(task.getId(), (Epic) task);
                 } else if (TaskType.SUBTASK.toString().equals(typeOfTask)) {
@@ -250,7 +233,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             if (i == dataList.size() - 1) {
                 System.out.println("Истории нет");
             } else {
-                List<Integer> historyTasksIdList = GlobalTaskConverter.historyFromString(dataList.get(dataList.size() - 1));
+                List<Integer> historyTasksIdList = CsvTaskConverter.historyFromString(dataList.get(dataList.size() - 1));
                 for (Integer id : historyTasksIdList) {
                     if (fileManager.getTask(id) != null) fileManager.history.addHistory(fileManager.getTask(id));
                     if (fileManager.getEpic(id) != null) fileManager.history.addHistory(fileManager.getEpic(id));
