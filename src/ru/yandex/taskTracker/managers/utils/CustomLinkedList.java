@@ -1,14 +1,15 @@
-package ru.yandex.taskTracker.managers.historyManager;
+package ru.yandex.taskTracker.managers.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class CustomLinkedList<T> {
+public class CustomLinkedList<T> {
 
     private final HashMap<Integer, Node<T>> historyMap = new HashMap<>();
     private Node<T> head = null;
     private Node<T> tail = null;
     int size = 0;
+
 
     public ArrayList<T> getTaskList() {
         ArrayList<T> historyList = new ArrayList<>();
@@ -32,10 +33,8 @@ class CustomLinkedList<T> {
             unlink(historyMap.get(id));
             historyMap.remove(id);
             size--;
-        } else {
-            System.out.println("В истории не обнаружено ключа " + id);
-            return;
         }
+        //удалили пояснение, что в случае если ключа не существует, в консоль это не выводится
     }
 
     private void link(T element, Integer id) {

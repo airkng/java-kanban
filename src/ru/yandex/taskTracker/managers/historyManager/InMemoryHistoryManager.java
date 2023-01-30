@@ -1,5 +1,6 @@
 package ru.yandex.taskTracker.managers.historyManager;
 
+import ru.yandex.taskTracker.managers.utils.CustomLinkedList;
 import ru.yandex.taskTracker.tasks.Task;
 
 import java.util.List;
