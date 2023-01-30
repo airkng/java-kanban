@@ -10,19 +10,21 @@ import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class TaskMangerTest<T extends TaskManager> {
 
-      T taskManager;
-      Task book;
-      Task study;
-      Epic homeBuild;
-      Subtask fundament;
-      Subtask workers;
-      Epic movement;
-      Subtask planToMove;
+     public T taskManager;
+     public Task book;
+     public Task study;
+     public Epic homeBuild;
+     public Subtask fundament;
+     public Subtask workers;
+     public Epic movement;
+     public Subtask planToMove;
 
     public abstract T createManager();
 
@@ -398,6 +400,39 @@ public abstract class TaskMangerTest<T extends TaskManager> {
    }
    @Test
     public void getPrioritizedTasksTest(){
+       Task task1 = new Task("Book", "Buy autoBook", Status.NEW, 16, LocalDateTime.of(2023,1,1,2,0));
+       Task task2 = new Task("Study", "learn java lang", Status.IN_PROGRESS, 10, LocalDateTime.of(2023,1,1,0, 0));
+       int taskid1 = taskManager.addTask(task1);
+       int taskid2 = taskManager.addTask(task2);
 
+       Epic epic1 = new Epic("home", "building and buying house");
+       int epic1ID = taskManager.addEpic(epic1);
+       Epic epic2 = new Epic("movement", "movement from Russia to Bali");
+       taskManager.addEpic(epic2);
+
+
+       Subtask sub1 = new Subtask("buy fundament", "find store and buy fundament", Status.NEW, epic1ID, 10, LocalDateTime.of(2023, 1,1,0,16));
+       int sub1ID = taskManager.addSubtask(sub1);
+
+       Subtask sub2 = new Subtask("Create plan", "smthingt", Status.NEW, epic1ID, 15, LocalDateTime.of(2023, 1,1,0,30));
+       int sub2ID = taskManager.addSubtask(sub2);
+
+       Subtask sub3 = new Subtask("Workers", "find a worker for building", Status.IN_PROGRESS, epic1ID, 30, LocalDateTime.of(2023, 1,1,0,45));
+       int sub3ID = taskManager.addSubtask(sub3);
+       ArrayList<Task> expectedRes1 = new ArrayList<>();
+       expectedRes1.add(task2);
+       expectedRes1.add(sub1);
+       expectedRes1.add(sub2);
+       expectedRes1.add(sub3);
+       expectedRes1.add(task1);
+       expectedRes1.add(epic2);
+       assertEquals(expectedRes1, taskManager.getPrioritizedTasks());
+       assertEquals(epic1.getStartTime(), sub1.getStartTime());
+       assertEquals(epic1.getEndTime(), sub3.getEndTime());
+       //пересечение
+       Task cross1 = new Task("test", "testing", Status.IN_PROGRESS, 15, LocalDateTime.of(2023, 1,1,0,20));
+       int idTest = taskManager.addTask(cross1);
+       assertEquals(-1, idTest);
+       assertEquals(expectedRes1, taskManager.getPrioritizedTasks());
    }
 }
