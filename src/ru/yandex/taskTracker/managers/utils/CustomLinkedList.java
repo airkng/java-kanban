@@ -68,8 +68,6 @@ public class CustomLinkedList<T> {
         } else {
             prev.next = next;
             nodeToRemove.prev = null;
-            // А-нет)) тут бы с тобой поспорили разрабы LinkedList, т.к я свято спер оттуда этот метод
-            // + все же я считаю, что это правильно, т.к GC явно понимает, что нужно удалить объект
         }
 
         if (next == null) {
@@ -82,7 +80,6 @@ public class CustomLinkedList<T> {
         nodeToRemove.data = null;
     }
 
-    //ДЖАВАСКРИПТИЗЕРЫ АХАХАХХАХА, Александр, у вас потрясные шутки!
     private static class Node<E> {
         private E data;
         private Node<E> prev;

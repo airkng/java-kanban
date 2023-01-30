@@ -24,11 +24,6 @@ public class CsvTaskConverter {
         dataList.addAll(getSubtaskAsStringList(subtasks));
         dataList.add(getHistoryAsStringLine(history));
         return dataList;
-
-        //Не, в данном случае все-таки лучше не буду рефакторить, так как мне кажется это чем-то напоминает антипаттерн
-        //божественный метод. + придется убирать, переимновывать методы, параметры менять, меее :( ненавижу рефакторить
-        //мне кажется это одно из самых нелюбимых у проггеров
-        //я передумал. Сделал ^_^
     }
 
     private static List<String> getTasksAsStringList(Map<Integer, Task> tasks) {
