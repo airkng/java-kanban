@@ -119,6 +119,7 @@ public class Main {
         taskManager.deleteEpicById(epic1ID);
         System.out.println("История: \n" + taskManager.getHistory());
 
+        //epic1.ge
 
     }
 }
