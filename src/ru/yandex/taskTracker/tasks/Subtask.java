@@ -1,11 +1,23 @@
 package ru.yandex.taskTracker.tasks;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Subtask extends Task {
     private int epicID; // переменная, которая привязывает SubTask к Epic
 
-    public Subtask(String name, String description, Status status, int epicID) {
+    public Subtask(String name, String description, Status status, int epicID, long duration, LocalDateTime startTime ) {
+        super(name, description, status, duration ,startTime);
+        this.epicID = epicID;
+    }
+
+    //Конструктор для метода .update()
+    public Subtask(String name, String description, Status status, int id, int epicID, long duration, LocalDateTime startTime) {
+        super(name, description, status, id, duration, startTime);
+        this.epicID = epicID;
+    }
+
+    public Subtask(String name, String description, Status status, int epicID ) {
         super(name, description, status);
         this.epicID = epicID;
     }

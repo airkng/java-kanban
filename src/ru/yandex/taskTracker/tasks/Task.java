@@ -1,5 +1,9 @@
 package ru.yandex.taskTracker.tasks;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Objects;
 
 public class Task {
@@ -11,6 +15,40 @@ public class Task {
     protected Status status;
     protected Integer id;
 
+    protected long duration;
+    protected LocalDateTime startTime;
+
+    public Task(String name, String description, Status status, int id, long duration, LocalDateTime startTime) {
+        if (name.length() < 80 && duration > 0) {
+            this.name = name;
+            this.description = description;
+            this.status = status;
+            this.id = id;
+            this.duration = duration;
+            this.startTime = startTime;
+
+        } else {
+            System.out.println("Неверные значения при создании объекта");
+            throw new IllegalArgumentException("Неверные значения при создании объекта Task");
+        }
+    }
+
+    public Task(String name, String description, Status status, long duration, LocalDateTime startTime ) {
+        if (name.length() < 80 && duration > 0) {
+            count++;
+            this.name = name;
+            this.description = description;
+            this.status = status;
+            this.id = generateID(name, description, status);
+            this.duration = duration;
+            this.startTime = startTime;
+        } else {
+            System.out.println("Неверные значения при создании объекта");
+            throw new IllegalArgumentException("Неверные значения при создании объекта Task");
+        }
+
+    }
+
     public Task(String name, String description, Status status, int id) {
         if (name.length() < 80) {
             this.name = name;
@@ -19,6 +57,7 @@ public class Task {
             this.id = id;
         } else {
             System.out.println("Неверные значения при создании объекта");
+            throw new IllegalArgumentException("Неверные значения при создании объекта Task");
         }
     }
 
@@ -31,6 +70,7 @@ public class Task {
             this.id = generateID(name, description, status);
         } else {
             System.out.println("Неверные значения при создании объекта");
+            throw new IllegalArgumentException("Неверные значения при создании объекта Task");
         }
 
     }
@@ -67,6 +107,31 @@ public class Task {
         return id;
     }
 
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime(){
+        if(this.duration != 0 && this.startTime != null) {
+            Duration duration = Duration.ofMinutes(this.duration);
+            return startTime.plus(duration);
+        } else {
+            throw new IllegalStateException("Временные(ая) границы(а) не были заданы");
+        }
+    }
+
     protected static int generateID(String name, String description, Status status) {
         int hash = Objects.hash(name, description, status); //Корректно ли сюда засовывать Enum? Думаю, ничего плохого
         hash += count;
@@ -78,7 +143,9 @@ public class Task {
         return "Task = {name = '" + this.name + '\'' +
                 " description = ' " + this.description + '\'' +
                 " status = '" + this.status + '\'' +
-                " id = '" + this.id + '\'';
+                " id = '" + this.id + '\'' +
+                " startTime = '" + this.getStartTime() + '\'' +
+                " endTime = '" + this.getEndTime() + '\'' + "\n";
     }
 
     @Override
@@ -100,10 +167,4 @@ public class Task {
         hash = (status.hashCode() + hash + count);
         return hash;
     }
-
-    //Старый коммит, оставил себе на заметку
-    //Я как будто бы вижу в этом много потенциальных ошибок. А вытащить объект и пересоздать новый
-    //да, сложно неудобно, но как будто бы потенциально меньше багов возникает. А тут допустим, дергаем у эпика метод,
-    //меняем его айдишку. И все собственно. Сабтаски указывают на несуществующий старый айди эпика и о новом ничего не знают
-    // Надо подумать над этим, как 4 спринт пройду, отпишусь с мыслями по этому поводу в слаке
 }
