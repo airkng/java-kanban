@@ -1,9 +1,7 @@
 package ru.yandex.taskTracker.tasks;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Objects;
 
 public class Task {
@@ -33,7 +31,7 @@ public class Task {
         }
     }
 
-    public Task(String name, String description, Status status, long duration, LocalDateTime startTime ) {
+    public Task(String name, String description, Status status, long duration, LocalDateTime startTime) {
         if (name.length() < 80 && duration > 0) {
             count++;
             this.name = name;
@@ -123,12 +121,13 @@ public class Task {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime(){
-        if(this.duration != 0 && this.startTime != null) {
+    public LocalDateTime getEndTime() {
+        if (this.duration != 0 && this.startTime != null) {
             Duration duration = Duration.ofMinutes(this.duration);
             return startTime.plus(duration);
         } else {
-            throw new IllegalStateException("Временные(ая) границы(а) не были заданы");
+            //throw new IllegalStateException("Временные(ая) границы(а) не были заданы");
+            return null;
         }
     }
 
@@ -154,12 +153,10 @@ public class Task {
         if (obj == null) return false;
         if (this.getClass() != obj.getClass()) return false;
         Task task = (Task) obj;
-        return  Objects.equals(this.name, task.getName()) &&               //проверка имен
+        return Objects.equals(this.name, task.getName()) &&               //проверка имен
                 Objects.equals(this.description, task.getDescription()) && // проверка описания
                 (this.status == task.getStatus());                         //проверка статуса.
-        // Хз как лучше проверить, через equals, == или Objects.equals
-        //Думаю, все-таки через Objects.equals() было бы получше, из-за читабельности
-    }
+        }
 
     @Override
     public int hashCode() {
