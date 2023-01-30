@@ -15,6 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import ru.yandex.taskTracker.managers.utils.CsvTaskConverter;
+
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private final Path path;
@@ -25,7 +27,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     // как работает написанный код.
 
     public static void main(String[] args) {
-        TaskManager taskManager = new FileBackedTaskManager("testDir\\test.csv");
+
+        TaskManager taskManager = new FileBackedTaskManager("src/ru/yandex/taskTracker/managers/loadData/test2.csv");
 
         System.out.println("Создание тасков");
         Task task1 = new Task("Book", "Buy autoBook", Status.NEW);
@@ -62,7 +65,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         System.out.println("История: \n" + taskManager.getHistory());
         //taskManager.deleteTaskById(taskid1);
 
-        TaskManager taskLoaderManager = FileBackedTaskManager.loadFromFile(Path.of("testDir\\test.csv"));
+        TaskManager taskLoaderManager = FileBackedTaskManager.loadFromFile(Path.of("src/ru/yandex/taskTracker/managers/loadData/test2.csv"));
         System.out.println("Сабтаски загруженные из файла");
         System.out.println(taskLoaderManager.getSubtasksList());
         System.out.println("Эпики загруженные из файла");
@@ -74,7 +77,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private FileBackedTaskManager(String file) {
-        //заприватил конструктор
         path = Paths.get(file);
     }
 
@@ -90,14 +92,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
-    // желаю твоей печени здоровья
     @Override
-    public void deleteEpic() {
-        super.deleteEpic();
+    public void deleteEpics() {
+        super.deleteEpics();
         save();
     }
 
-    // и сердцу, зная сколько боли ты испытываешь при проверке работ учеников ЯП
     @Override
     public Task getTask(Integer id) {
         Task task = super.getTask(id);
@@ -212,33 +212,41 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static FileBackedTaskManager loadFromFile(Path path) {
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path.toString());
         try {
-            List<String> dataList = Files.readAllLines(path);
-            int i = 1;
-            while (!dataList.get(i).isEmpty()) {
-                String textTask = dataList.get(i);
-                Task task = CsvTaskConverter.taskFromString(textTask);
-                String typeOfTask = textTask.split(",")[1];
+            if (Files.exists(path)) {
+                if (Files.readAllLines(path).isEmpty()) {
+                    return fileManager;
+                }
+                List<String> dataList = Files.readAllLines(path);
+                int i = 1;
+                while (!dataList.get(i).isEmpty()) {
+                    String textTask = dataList.get(i);
+                    Task task = CsvTaskConverter.taskFromString(textTask);
+                    String typeOfTask = textTask.split(",")[1];
 
-                if (TaskType.EPIC.toString().equals(typeOfTask)) {
-                    fileManager.epics.put(task.getId(), (Epic) task);
-                } else if (TaskType.SUBTASK.toString().equals(typeOfTask)) {
-                    fileManager.subtasks.put(task.getId(), (Subtask) task);
-                } else if (TaskType.TASK.toString().equals(typeOfTask)) {
-                    fileManager.tasks.put(task.getId(), task);
+                    if (TaskType.EPIC.toString().equals(typeOfTask)) {
+                        fileManager.epics.put(task.getId(), (Epic) task);
+                    } else if (TaskType.SUBTASK.toString().equals(typeOfTask)) {
+                        fileManager.subtasks.put(task.getId(), (Subtask) task);
+                    } else if (TaskType.TASK.toString().equals(typeOfTask)) {
+                        fileManager.tasks.put(task.getId(), task);
+                    } else {
+                        throw new ManagerSaveException("неверный тип таска в файле");
+                    }
+                    i++;
+                }
+                if (i == dataList.size() - 1) {
+                    System.out.println("Истории нет");
                 } else {
-                    throw new ManagerSaveException("неверный тип таска в файле");
+                    List<Integer> historyTasksIdList = CsvTaskConverter.historyFromString(dataList.get(dataList.size() - 1));
+                    for (Integer id : historyTasksIdList) {
+                        if (fileManager.getTask(id) != null) fileManager.history.addHistory(fileManager.getTask(id));
+                        if (fileManager.getEpic(id) != null) fileManager.history.addHistory(fileManager.getEpic(id));
+                        if (fileManager.getSubtask(id) != null)
+                            fileManager.history.addHistory(fileManager.getSubtask(id));
+                    }
                 }
-                i++;
-            }
-            if (i == dataList.size() - 1) {
-                System.out.println("Истории нет");
             } else {
-                List<Integer> historyTasksIdList = CsvTaskConverter.historyFromString(dataList.get(dataList.size() - 1));
-                for (Integer id : historyTasksIdList) {
-                    if (fileManager.getTask(id) != null) fileManager.history.addHistory(fileManager.getTask(id));
-                    if (fileManager.getEpic(id) != null) fileManager.history.addHistory(fileManager.getEpic(id));
-                    if (fileManager.getSubtask(id) != null) fileManager.history.addHistory(fileManager.getSubtask(id));
-                }
+                fileManager.createUnExistFile();
             }
 
         } catch (IOException e) {
@@ -247,6 +255,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return fileManager;
     }
 
-
+    private void createUnExistFile() throws IOException {
+        Path parentDirectory = path.getParent();
+        String fileName = path.getFileName().toString();
+        Files.createDirectories(parentDirectory);
+        if (fileName.endsWith(".txt") || fileName.endsWith(".csv")) {
+            Files.createFile(path);
+        } else {
+            throw new ManagerSaveException("Указан неверный формат файла");
+        }
+    }
 }
 
