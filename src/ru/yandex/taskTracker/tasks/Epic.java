@@ -1,39 +1,20 @@
 package ru.yandex.taskTracker.tasks;
 
+import ru.yandex.taskTracker.managers.utils.StartTimeComparator;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Objects;
 
 public class Epic extends Task {
 
     private static int epicId = 100_000;
-    private final ArrayList<Integer> epicSubtasksList = new ArrayList<>();      //Лист айдишек сабтасков
+    private final ArrayList<Subtask> epicSubtasksList = new ArrayList<>();      //Лист сабтасков эпика
+    private final Comparator<Task> timeSort = new StartTimeComparator();
 
-    private final Comparator<Subtask> endTimeSort = (o1, o2) -> {
-        LocalDateTime time1 = o1.getStartTime().plusMinutes(o1.getDuration());
-        LocalDateTime time2 = o2.getStartTime().plusMinutes(o2.getDuration());
 
-        if (time1.isAfter(time2)) {
-            return 1;
-        } else if (time1.isBefore(time2)) {
-            return -1;
-        } else {
-            return 0;
-        }
-    };
-    private final Comparator<Subtask> startTimeSort = (o1, o2) -> {
-        if (o1.getStartTime().isAfter(o2.getStartTime())) {
-            return 1;
-        } else if (o1.getStartTime().isBefore(o2.getStartTime())) {
-            return -1;
-        } else {
-            return 0;
-        }
-    };
-    private final ArrayList<Subtask> timeSubtasksList = new ArrayList<>();
     //конструктор для fileManager
     public Epic(String name, String description, Status status, int id) {
         super(name, description, status, id);
@@ -43,12 +24,15 @@ public class Epic extends Task {
         super(name, description, Status.NEW, epicId);
         epicId++;
     }
-
+    //конструктор для FileManager
+    public Epic(String name, String description, Status status, int id, long duration, LocalDateTime startTime){
+        super(name, description, status, id, duration, startTime);
+    }
     public Epic(String name, String description, int oldEpicID) {
         super(name, description, Status.NEW, oldEpicID);
     }
 
-    public ArrayList<Integer> getEpicSubtasksList() {
+    public ArrayList<Subtask> getEpicSubtasksList() {
         return epicSubtasksList;
     }
 
@@ -75,9 +59,9 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getEndTime() {
-        if (!timeSubtasksList.isEmpty()) {
-            timeSubtasksList.sort(endTimeSort);
-            Subtask latestSubtask = timeSubtasksList.get((timeSubtasksList.size() - 1));
+        if (!epicSubtasksList.isEmpty()) {
+            epicSubtasksList.sort(timeSort);
+            Subtask latestSubtask = epicSubtasksList.get((epicSubtasksList.size() - 1));
             return latestSubtask.getEndTime();
         } else {
             System.out.println("В классе Epic отсутствуют time-Subtasks");
@@ -87,9 +71,9 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getStartTime() {
-        if (!timeSubtasksList.isEmpty()) {
-            timeSubtasksList.sort(startTimeSort);
-            return timeSubtasksList.get(0).getStartTime();
+        if (!epicSubtasksList.isEmpty()) {
+            epicSubtasksList.sort(timeSort);
+            return epicSubtasksList.get(0).getStartTime();
         } else {
             return null;
         }
@@ -97,42 +81,49 @@ public class Epic extends Task {
 
     @Override
     public long getDuration() {
-        if (!timeSubtasksList.isEmpty()) {
-            return Duration.between(getStartTime(), getEndTime()).toMinutes(); //Насколько помню, сделали плюс день
-            //так как день не учитывается
-        } else {
+        if (epicSubtasksList.isEmpty()) {
             return 0;
         }
+        duration = null;
+        for (Subtask subtask : epicSubtasksList) {
+            if (subtask.getStartTime() == null || subtask.getDuration() == 0){
+                continue;
+            }
+            if (duration == null) {
+                duration = Duration.ofMinutes(subtask.getDuration());
+                continue;
+            }
+            duration = duration.plus(Duration.ofMinutes(subtask.getDuration()));
+        }
+        if (duration == null){
+            return 0;
+        }
+        return duration.toMinutes();
     }
 
-    public void removeSubtask(Integer id) {
-        epicSubtasksList.remove(id);
+    public void removeSubtask(Subtask subtask) {
+        epicSubtasksList.remove(subtask);
     }
 
-    public void addSubtask(Integer id) {
-        epicSubtasksList.add(id);
+    public void addSubtask(Subtask subtask) {
+        epicSubtasksList.add(subtask);
     }
 
     public void linkSubtask(Subtask subtask) {
-        epicSubtasksList.add(subtask.getId());
+        epicSubtasksList.add(subtask);
     }
 
-    public void checkAndUpdateStatus(HashMap<Integer, Subtask> subtasks) {
+    public void checkAndUpdateStatus() {
         if (epicSubtasksList.isEmpty()) {
             this.status = Status.NEW;
         } else {
             int doneCount = 0;
             int newStatusCount = 0;
 
-            for (Integer id : epicSubtasksList) {
-                Subtask subtask = subtasks.get(id);
+            for (Subtask subtask : epicSubtasksList) {
                 //Если у сабтаска есть time-переменные, то добавляем в лист сабтасков, откуда будем вытаскивать
                 //startTime, endTime и duration для Эпика
-                if (subtask.getStartTime() != null) {
-                    timeSubtasksList.add(subtask);
-                    startTime = getStartTime();
-                    duration = getDuration();
-                }
+
                 if (Status.DONE.equals(subtask.getStatus())) {
                     doneCount++;
                 }
@@ -168,6 +159,8 @@ public class Epic extends Task {
         return "Epic = {name = '" + this.name + '\'' +
                 " description = ' " + this.description + '\'' +
                 " status = '" + this.status + '\'' +
-                " id = '" + this.id + '\'';
+                " id = '" + this.id + '\'' +
+                " startTime = '" + this.getStartTime() + '\'' +
+                " duration = '" + this.getDuration() + '\'' + "\n";
     }
 }

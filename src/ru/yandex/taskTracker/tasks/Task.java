@@ -13,16 +13,16 @@ public class Task {
     protected Status status;
     protected Integer id;
 
-    protected long duration;
+    protected Duration duration;
     protected LocalDateTime startTime;
 
     public Task(String name, String description, Status status, int id, long duration, LocalDateTime startTime) {
-        if (name.length() < 80 && duration > 0) {
+        if (name.length() < 80) {
             this.name = name;
             this.description = description;
             this.status = status;
             this.id = id;
-            this.duration = duration;
+            this.duration = Duration.ofMinutes(duration);
             this.startTime = startTime;
 
         } else {
@@ -32,13 +32,13 @@ public class Task {
     }
 
     public Task(String name, String description, Status status, long duration, LocalDateTime startTime) {
-        if (name.length() < 80 && duration > 0) {
+        if (name.length() < 80 ) {
             count++;
             this.name = name;
             this.description = description;
             this.status = status;
             this.id = generateID(name, description, status);
-            this.duration = duration;
+            this.duration = Duration.ofMinutes(duration);
             this.startTime = startTime;
         } else {
             System.out.println("Неверные значения при создании объекта");
@@ -106,11 +106,14 @@ public class Task {
     }
 
     public long getDuration() {
-        return duration;
+        if (duration == null){
+            return 0;
+        }
+        return duration.toMinutes();
     }
 
     public void setDuration(long duration) {
-        this.duration = duration;
+        this.duration = Duration.ofMinutes(duration);
     }
 
     public LocalDateTime getStartTime() {
@@ -122,17 +125,15 @@ public class Task {
     }
 
     public LocalDateTime getEndTime() {
-        if (this.duration != 0 && this.startTime != null) {
-            Duration duration = Duration.ofMinutes(this.duration);
+        if (this.duration.toMinutes() != 0 && this.startTime != null) {
             return startTime.plus(duration);
         } else {
-            //throw new IllegalStateException("Временные(ая) границы(а) не были заданы");
-            return null;
+           return null;
         }
     }
 
     protected static int generateID(String name, String description, Status status) {
-        int hash = Objects.hash(name, description, status); //Корректно ли сюда засовывать Enum? Думаю, ничего плохого
+        int hash = Objects.hash(name, description, status);
         hash += count;
         return hash;
     }
@@ -144,7 +145,7 @@ public class Task {
                 " status = '" + this.status + '\'' +
                 " id = '" + this.id + '\'' +
                 " startTime = '" + this.getStartTime() + '\'' +
-                " endTime = '" + this.getEndTime() + '\'' + "\n";
+                " duration = '" + this.getDuration() + '\'' + "\n";
     }
 
     @Override
@@ -156,7 +157,7 @@ public class Task {
         return Objects.equals(this.name, task.getName()) &&               //проверка имен
                 Objects.equals(this.description, task.getDescription()) && // проверка описания
                 (this.status == task.getStatus());                         //проверка статуса.
-        }
+    }
 
     @Override
     public int hashCode() {
