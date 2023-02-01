@@ -1,17 +1,14 @@
-package taskTracker.managers.taskManager.FileBackedTaskManager;
+package ru.yandex.taskTracker.managers.taskManager.fileManager;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.taskTracker.managers.taskManager.fileManager.FileBackedTaskManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
-import taskTracker.managers.taskManager.TaskMangerTest;
+import ru.yandex.taskTracker.managers.taskManager.TaskMangerTest;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,17 +25,7 @@ public class FileBackedTaskManagerTest extends TaskMangerTest<FileBackedTaskMana
         Files.delete(path);
     }
     @Test
-    public void shouldReturnEmptyHistoryAndRightTasksLists(){
-        taskManager.addTask(study);
-        taskManager.addTask(book);
-        taskManager.updateTask(book);
-        taskManager.addEpic(homeBuild);
-        assertEquals(List.of(), taskManager.getHistory());
-        assertEquals(2, taskManager.getTasksList().size());
-        assertEquals(1, taskManager.getEpicList().size());
-    }
-    @Test
-    public void shouldReturnEmptyHistoryAndTasksListsFromEmptyFile(){
+    public void getHistory_shouldReturnEmptyHistoryAndTasksListsFromEmptyFile_LoadFromEmptyFile(){
         FileBackedTaskManager test = FileBackedTaskManager.loadFromFile(Path.of("src/ru/yandex/taskTracker/managers/loadData/emptyData.csv"));
         assertEquals(List.of(), test.getHistory());
         assertEquals(List.of(), test.getTasksList());
@@ -46,7 +33,7 @@ public class FileBackedTaskManagerTest extends TaskMangerTest<FileBackedTaskMana
         assertEquals(List.of(), test.getEpicList());
     }
     @Test
-    public void shouldReturnRightSequenceHistory(){
+    public void getHistory_shouldReturnRightSequenceHistory_loadTasksDataFromPath(){
         Task task1 = new Task("Book", "Buy autoBook", Status.NEW);
         Task task2 = new Task("Study", "learn java lang", Status.IN_PROGRESS);
         int taskid1 = taskManager.addTask(task1);
@@ -80,7 +67,7 @@ public class FileBackedTaskManagerTest extends TaskMangerTest<FileBackedTaskMana
         assertEquals(List.of(task2, epic1, epic2, sub1, sub2, sub3,task1), test.getHistory());
     }
     @Test
-    public void saveAndLoadFromFileTest(){
+    public void saveAndLoadFromFile_shouldBeEqualsManagers_SaveToPathAndLoadFromItTasksDataInfo(){
         int id1 = taskManager.addTask(book);
         int id2 = taskManager.addTask(study);
         int id3 =taskManager.addEpic(homeBuild);
