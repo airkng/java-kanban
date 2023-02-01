@@ -212,43 +212,46 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static FileBackedTaskManager loadFromFile(Path path) {
         FileBackedTaskManager fileManager = new FileBackedTaskManager(path.toString());
         try {
-            if (Files.exists(path)) {
-                if (Files.readAllLines(path).isEmpty()) {
-                    return fileManager;
-                }
-                List<String> dataList = Files.readAllLines(path);
-                int i = 1;
-                while (!dataList.get(i).isEmpty()) {
-                    String textTask = dataList.get(i);
-                    Task task = CsvTaskConverter.taskFromString(textTask);
-                    String typeOfTask = textTask.split(",")[1];
+            if (!Files.exists(path)) {
+                fileManager.createUnExistFile();
+                return fileManager;
+            }
+            if (Files.readAllLines(path).isEmpty()) {
+                return fileManager;
+            }
+            List<String> dataList = Files.readAllLines(path);
+            int i = 1;
+            while (!dataList.get(i).isEmpty()) {
+                String textTask = dataList.get(i);
+                Task task = CsvTaskConverter.taskFromString(textTask);
+                String typeOfTask = textTask.split(",")[1];
 
-                    if (TaskType.EPIC.toString().equals(typeOfTask)) {
-                        fileManager.epics.put(task.getId(), (Epic) task);
-                    } else if (TaskType.SUBTASK.toString().equals(typeOfTask)) {
-                        fileManager.subtasks.put(task.getId(), (Subtask) task);
-                    } else if (TaskType.TASK.toString().equals(typeOfTask)) {
-                        fileManager.tasks.put(task.getId(), task);
-                    } else {
-                        throw new ManagerSaveException("неверный тип таска в файле");
-                    }
-                    i++;
-                }
-                if (i == dataList.size() - 1) {
-                    System.out.println("Истории нет");
+                if (TaskType.EPIC.toString().equals(typeOfTask)) {
+                    fileManager.epics.put(task.getId(), (Epic) task);
+                } else if (TaskType.SUBTASK.toString().equals(typeOfTask)) {
+                    fileManager.subtasks.put(task.getId(), (Subtask) task);
+                } else if (TaskType.TASK.toString().equals(typeOfTask)) {
+                    fileManager.tasks.put(task.getId(), task);
                 } else {
-                    List<Integer> historyTasksIdList = CsvTaskConverter.historyFromString(dataList.get(dataList.size() - 1));
-                    for (Integer id : historyTasksIdList) {
-                        if (fileManager.getTask(id) != null) fileManager.history.addHistory(fileManager.getTask(id));
-                        if (fileManager.getEpic(id) != null) fileManager.history.addHistory(fileManager.getEpic(id));
-                        if (fileManager.getSubtask(id) != null)
-                            fileManager.history.addHistory(fileManager.getSubtask(id));
-                    }
+                    throw new ManagerSaveException("неверный тип таска в файле");
                 }
+                i++;
+            }
+            if (i == dataList.size() - 1) {
+                System.out.println("Истории нет");
             } else {
+                List<Integer> historyTasksIdList = CsvTaskConverter.historyFromString(dataList.get(dataList.size() - 1));
+                for (Integer id : historyTasksIdList) {
+                    if (fileManager.getTask(id) != null) fileManager.history.addHistory(fileManager.getTask(id));
+                    if (fileManager.getEpic(id) != null) fileManager.history.addHistory(fileManager.getEpic(id));
+                    if (fileManager.getSubtask(id) != null)
+                        fileManager.history.addHistory(fileManager.getSubtask(id));
+                }
+            }
+             /*else {
                 fileManager.createUnExistFile();
             }
-
+*/
         } catch (IOException e) {
             throw new ManagerSaveException();
         }

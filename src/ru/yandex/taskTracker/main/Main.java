@@ -7,12 +7,14 @@ import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Main {
 
 
     public static void main(String[] args) {
+        Task t1 = new Task("test", "testign", Status.IN_PROGRESS, 0, LocalDateTime.of(2023, 1,1,1,1));
         TaskManager taskManager = Managers.getDefault();
         //Создание тасков
         Task autoTask = new Task("Auto", "Buy auto", Status.NEW);
