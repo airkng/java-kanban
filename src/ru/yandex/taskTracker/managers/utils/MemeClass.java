@@ -10,7 +10,8 @@ import ru.yandex.taskTracker.tasks.Task;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class TimePrioritizedTaskSet {
+@Deprecated
+public class MemeClass {
 
     private final Comparator<Task> timeComparator = (o1, o2) -> {
         if (o1.getStartTime() == null) {
@@ -122,10 +123,9 @@ public class TimePrioritizedTaskSet {
             freeTimeDurationsMap.replace(time, false);
         }
     }
-
-    public void updatePrioritizedList(Map<Integer, Task> tasks, Map<Integer, Subtask> subtasks,Map<Integer, Epic> epics){
+    private void updatePrioritizedList(Map<Integer, Task> tasks, Map<Integer, Subtask> subtasks,Map<Integer, Epic> epics){
         timePrioritizedTasks.clear();
-        freeTimeDurationsMap = resetFreeTimeDurationsMap();
+
         for(Task task: tasks.values()){
             addToPrioritizedList(task);
         }
@@ -136,6 +136,8 @@ public class TimePrioritizedTaskSet {
             addToPrioritizedList(epic);
         }
     }
+
+
 
     public TreeSet<Task> getPrioritizedTasks(){
         return timePrioritizedTasks;
