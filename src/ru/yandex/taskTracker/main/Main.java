@@ -24,6 +24,7 @@ public class Main {
        server.start();
        //TaskManager taskManager = Managers.getDefault("http://localhost:8078");
         HttpTaskServer server1 = new HttpTaskServer();
+        server1.start();
 
         Task t1 = new Task("test", "testign", Status.IN_PROGRESS, 0, LocalDateTime.of(2023, 1,1,1,1));
         //TaskManager taskManager = Managers.getDefault();
