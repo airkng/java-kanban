@@ -1,3 +1,4 @@
+
 package ru.yandex.taskTracker.managers.utils;
 
 import ru.yandex.taskTracker.managers.taskManager.InMemoryTaskManager;
@@ -10,6 +11,8 @@ import ru.yandex.taskTracker.tasks.Task;
 import java.time.LocalDateTime;
 import java.util.*;
 
+//Величайшая ошибка во Вселенной. Попытались мы как-то значит по тз идти...
+//класс позора и унижения. Он останется в памяти навсегда
 @Deprecated
 public class MemeClass {
 
@@ -175,3 +178,4 @@ public class MemeClass {
         System.out.println(taskManager.getTasksList());
     }
 }
+
