@@ -12,8 +12,6 @@ public class Epic extends Task {
 
     private static int epicId = 100_000;
     private final ArrayList<Subtask> epicSubtasksList = new ArrayList<>();      //Лист сабтасков эпика
-    //private final Comparator<Task> timeSort = new StartTimeComparator();
-
 
     //конструктор для fileManager
     public Epic(String name, String description, Status status, int id) {
