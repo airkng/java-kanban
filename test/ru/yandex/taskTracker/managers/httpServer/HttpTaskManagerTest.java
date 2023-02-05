@@ -1,8 +1,9 @@
 package ru.yandex.taskTracker.managers.httpServer;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import ru.yandex.taskTracker.managers.taskManager.HttpTaskManager;
 import ru.yandex.taskTracker.managers.taskManager.TaskManagerTest;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Subtask;
@@ -20,7 +21,17 @@ public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
     public HttpTaskManagerTest() throws IOException, InterruptedException {
     }
 
-    static {
+    //Если запускать все тесты по отдельности, то они отлично работают, не понимаю почему
+    //примерно понимаю почему но не могу никак это исправить
+    //короче суть в том, что во время тестов Kv-server не останавливается. Поэтому после каждого теста, данные
+    //в нем не исчезают. Поэтому и проходит половину тестов. Я все пытался через beforeEach делать запуск сервера
+    //но он почему-то не проходит. Вообще запутался с этим
+    @Override
+    public HttpTaskManager createManager() throws IOException, InterruptedException {
+        return new HttpTaskManager("http://localhost:8078");
+    }
+    @BeforeAll
+    public static void create() {
         try {
             kvServer = new KVServer();
             kvServer.start();
@@ -28,11 +39,9 @@ public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
             throw new RuntimeException(e);
         }
     }
-    //Если запускать все тесты по отдельности, то они отлично работают, не понимаю почему
-    //примерно понимаю почему но не могу никак это исправить
-    @Override
-    public HttpTaskManager createManager() throws IOException, InterruptedException {
-        return new HttpTaskManager("http://localhost:8078");
+    @AfterAll
+    public static void stop() {
+        kvServer.stop();
     }
 
     @Test
@@ -54,6 +63,10 @@ public class HttpTaskManagerTest extends TaskManagerTest<HttpTaskManager> {
         assertEquals("Epic1", manager.getEpic(epicId).getName());
         assertEquals("SubTask1 - 1", manager.getSubtask(sub1_1.getId()).getName());
         assertEquals("Task1", manager.getHistory().get(0).getName());
+
+        HttpTaskManager mt = new HttpTaskManager("http://localhost:8078");
+        System.out.println(mt.getEpicList());
+        assertEquals(manager.getEpicList().size(), mt.getEpicList().size());
     }
 
     @Test

@@ -30,40 +30,39 @@ public class EpicHandler implements HttpHandler {
         switch (method) {
             case "GET": {
                 String[] requestPathAndParameters = fullPath.split("/");
-                if (requestPathAndParameters.length == 3) {
-                    if (exchange.getRequestURI().getQuery() == null) {
-                        getEpicsResponse(exchange); //метод
-                        return;
-                    }
-                    if (exchange.getRequestURI().getQuery().startsWith("id=")) {
-                        getEpicResponse(exchange, exchange.getRequestURI().getQuery()); //метод
-                        return;
-                    }
-                    sendClientErrorResponse(exchange, 400, "Неверные параметры query-заголовка (id) либо URL");
-                    break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    getEpicsResponse(exchange);                                         //метод
+                    return;
                 }
-                sendClientErrorResponse(exchange, 404, "Путь не найден");
-                break;
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    getEpicResponse(exchange, exchange.getRequestURI().getQuery());     //метод
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Неверные параметры query-заголовка (id) либо URL");
+                    break;
             }
             case "POST": {
-                addOrUpdateSubtask(exchange);
-                break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    addEpicResponse(exchange);                                         //метод
+                    return;
+                }
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    updateEpicResponse(exchange, exchange.getRequestURI().getQuery());     //метод
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Bad request");
             }
             case "DELETE": {
                 String[] requestPathAndParameters = fullPath.split("/");
-                if (requestPathAndParameters.length == 3) {
-                    if (exchange.getRequestURI().getQuery() == null) {
-                        deleteEpics(exchange);
-                        return;
-                    }
-                    if (exchange.getRequestURI().getQuery().startsWith("id=")) {
-                        deleteEpicById(exchange, exchange.getRequestURI().getQuery());
-                        return;
-                    }
-                    sendClientErrorResponse(exchange, 400, "Неверные параметр (id) query-заголовка");
-                    break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    deleteEpics(exchange);
+                    return;
                 }
-                sendClientErrorResponse(exchange, 404, "Запрос по данному URL не найден");
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    deleteEpicById(exchange, exchange.getRequestURI().getQuery());
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Неверные параметр (id) query-заголовка");
                 break;
             }
             default: {
@@ -126,37 +125,70 @@ public class EpicHandler implements HttpHandler {
         sendResponse(exchange, 200, "Task was deleted");
     }
 
-    public void addOrUpdateSubtask(HttpExchange exchange) throws IOException {
+    public void addEpicResponse(HttpExchange exchange) throws IOException {
         try {
-            /*if (exchange.getRequestBody().available() != 0) {*/
-                InputStream body = exchange.getRequestBody();
-                String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
-                Epic epic = gson.fromJson(jsonBody, Epic.class); //Что-то не так с эпиком, не понимаю ничего
-                if (epic == null) {
-                    sendClientErrorResponse(exchange, 400, "Передан null объект");
+            InputStream body = exchange.getRequestBody();
+            String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
+            Epic epic = gson.fromJson(jsonBody, Epic.class);
+            if (epic == null) {
+                sendClientErrorResponse(exchange, 400, "Передан null объект");
+                return;
+            }
+            if (epic.getId() != null) {
+                if (epic.getId() == -1) {
+                    sendClientErrorResponse(exchange, 423, "Некорректный id");
                     return;
                 }
-                if (epic.getId() != null) {
-                    if (epic.getId() == -1) {
-                        sendClientErrorResponse(exchange, 423, "Некорректный id");
-                        return;
-                    }
-                    if (epic.getStatus() == null) {
-                        epic.setStatus(Status.NEW); //добавлена проверка status по сравнению с другими handlers
-                    }
-                    sendResponse(exchange, 201, "Ваши изменения были учтены");
-                    int epicId = taskManager.addEpic(epic);
-                    if (epicId == -1) {
-                        taskManager.updateEpic(epic);
-                    }
-                    return;
-                } else {
-                    sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
+                if (epic.getStatus() == null) {
+                    epic.setStatus(Status.NEW); //добавлена проверка status по сравнению с другими handlers
                 }
-            /*} else {*/
-                sendClientErrorResponse(exchange, 400, "Отсутствует json-объект");
-            //}
-        } catch (JsonSyntaxException e) {
+                int taskId = taskManager.addEpic(epic);
+                if (taskId == -1) {
+                    sendClientErrorResponse(exchange, 423, "Воспользуйтесь методом update");
+                    return;
+                }
+                sendResponse(exchange, 201, "Ваши изменения были учтены");
+            } else {
+                sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
+        }
+    }
+
+    public void updateEpicResponse(HttpExchange exchange, String requestParameters) throws IOException {
+        String epicID = requestParameters.split("=")[1];
+        Optional<Integer> id = getTaskId(epicID);
+        if (id.isEmpty()) {
+            sendClientErrorResponse(exchange, 400, "Передан некорректный id в параметре");
+            return;
+        }
+        try {
+            InputStream body = exchange.getRequestBody();
+            String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
+            Epic epic = gson.fromJson(jsonBody, Epic.class);
+            if (epic == null) {
+                sendClientErrorResponse(exchange, 400, "Передан null объект");
+                return;
+            }
+            if (epic.getId() != null) {
+                if (!epic.getId().equals(id.get())) {
+                    sendClientErrorResponse(exchange,400, "Id в теле не совпадает с id в query");
+                    return;
+                }
+                if (epic.getId() == -1) {
+                    sendClientErrorResponse(exchange, 423, "Некорректный id");
+                    return;
+                }
+                if (epic.getStatus() == null) {
+                    epic.setStatus(Status.NEW); //добавлена проверка status по сравнению с другими handlers
+                }
+                sendResponse(exchange, 201, "Ваши изменения были учтены");
+                taskManager.updateEpic(epic);
+            } else {
+                sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
+            }
+        } catch (JsonSyntaxException | IOException e) {
             sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
         }
     }

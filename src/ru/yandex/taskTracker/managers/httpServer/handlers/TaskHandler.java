@@ -5,6 +5,8 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import ru.yandex.taskTracker.managers.taskManager.TaskManager;
+import ru.yandex.taskTracker.tasks.Status;
+import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
 
 import java.io.IOException;
@@ -29,40 +31,39 @@ public class TaskHandler implements HttpHandler {
         switch (method) {
             case "GET": {
                 String[] requestPathAndParameters = fullPath.split("/");
-                if (requestPathAndParameters.length == 3) {
-                    if (exchange.getRequestURI().getQuery() == null) {
-                        getTasksResponse(exchange);
-                        return;
-                    }
-                    if (exchange.getRequestURI().getQuery().startsWith("id=")) {
-                        getTaskResponse(exchange, exchange.getRequestURI().getQuery());
-                        return;
-                    }
-                    sendClientErrorResponse(exchange, 400, "Неверные параметры query-заголовка (id) либо URL");
-                    break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    getTasksResponse(exchange);
+                    return;
                 }
-                sendClientErrorResponse(exchange, 404, "Путь не найден");
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    getTaskResponse(exchange, exchange.getRequestURI().getQuery());
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Неверные параметры query-заголовка (id) либо URL");
                 break;
             }
             case "POST": {
-                addOrUpdateTask(exchange);
-                break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    addTaskResponse(exchange);                                         //метод
+                    return;
+                }
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    updateTaskResponse(exchange, exchange.getRequestURI().getQuery());     //метод
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Bad request");
             }
             case "DELETE": {
                 String[] requestPathAndParameters = fullPath.split("/");
-                if (requestPathAndParameters.length == 3) {
-                    if (exchange.getRequestURI().getQuery() == null) {
-                        deleteTasks(exchange);
-                        return;
-                    }
-                    if (exchange.getRequestURI().getQuery().startsWith("id=")) {
-                        deleteTaskById(exchange, exchange.getRequestURI().getQuery());
-                        return;
-                    }
-                    sendClientErrorResponse(exchange, 400, "Неверные параметр (id) query-заголовка");
-                    break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    deleteTasks(exchange);
+                    return;
                 }
-                sendClientErrorResponse(exchange, 404, "Запрос по данному URL не найден");
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    deleteTaskById(exchange, exchange.getRequestURI().getQuery());
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Неверные параметр (id) query-заголовка");
                 break;
             }
             default:
@@ -124,38 +125,72 @@ public class TaskHandler implements HttpHandler {
         sendResponse(exchange, 200, "Task was deleted");
     }
 
-    public void addOrUpdateTask(HttpExchange exchange) throws IOException {
+    public void addTaskResponse(HttpExchange exchange) throws IOException {
         try {
-            /*if (exchange.getRequestBody().available() != 0) {*/ //Вот тут возник вопрос, когда была
-            //эта строка, то тест не проходил. Я ее хотел сделать на проверку пустого body. Не вышло
-                InputStream body = exchange.getRequestBody();
-                String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
-                Task task = gson.fromJson(jsonBody, Task.class);
-                if (task == null) {
-                    sendClientErrorResponse(exchange, 400, "Передан null объект");
+            InputStream body = exchange.getRequestBody();
+            String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
+            Task task = gson.fromJson(jsonBody, Task.class);
+            if (task == null) {
+                sendClientErrorResponse(exchange, 400, "Передан null объект");
+                return;
+            }
+            if (task.getId() != null && task.getStatus() != null) {
+                if (task.getId() == -1) {
+                    sendClientErrorResponse(exchange, 423, "Некорректный ip");
                     return;
                 }
-                if (task.getId() != null && task.getStatus() != null) {
-                    if (task.getId() == -1) {
-                        sendClientErrorResponse(exchange, 423, "Некорректный ip");
-                        return;
-                    }
-                    sendResponse(exchange, 201, "Ваши изменения были учтены");
-                    int taskId = taskManager.addTask(task);
-                    if (taskId == -1) {
-                        taskManager.updateTask(task);
-                    }
+                int taskId = taskManager.addTask(task);
+                if (taskId == -1) {
+                    sendClientErrorResponse(exchange, 423, "Воспользуйтесь методом update");
                     return;
-                } else {
-                    sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
                 }
-           // }else {
-                sendClientErrorResponse(exchange, 400, "Отсутствует json-объект");
-            //}
-        } catch (JsonSyntaxException e) {
+                sendResponse(exchange, 201, "Ваши изменения были учтены");
+                return;
+            } else {
+                sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
+            }
+        } catch (JsonSyntaxException | IOException e) {
             sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
         }
     }
+
+    public void updateTaskResponse(HttpExchange exchange, String requestParameters) throws IOException {
+        String taskId = requestParameters.split("=")[1];
+        Optional<Integer> id = getTaskId(taskId);
+        if (id.isEmpty()) {
+            sendClientErrorResponse(exchange, 400, "Передан некорректный id в параметре");
+            return;
+        }
+        try {
+            InputStream body = exchange.getRequestBody();
+            String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
+            Task task = gson.fromJson(jsonBody, Task.class);
+            if (task == null) {
+                sendClientErrorResponse(exchange, 400, "Передан null объект");
+                return;
+            }
+            if (task.getId() != null) {
+                if (!task.getId().equals(id.get())) {
+                    sendClientErrorResponse(exchange,400, "Id в теле не совпадает с id в query");
+                    return;
+                }
+                if (task.getId() == -1) {
+                    sendClientErrorResponse(exchange, 423, "Некорректный id");
+                    return;
+                }
+                if (task.getStatus() == null) {
+                    task.setStatus(Status.NEW); //добавлена проверка status по сравнению с другими handlers
+                }
+                sendResponse(exchange, 201, "Ваши изменения были учтены");
+                taskManager.updateTask(task);
+            } else {
+                sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
+        }
+    }
+
 
     private Optional<Integer> getTaskId(String stringID) {
         try {

@@ -1,9 +1,10 @@
-package ru.yandex.taskTracker.managers.httpServer;
+package ru.yandex.taskTracker.managers.taskManager;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import ru.yandex.taskTracker.managers.httpServer.KVTaskClient;
 import ru.yandex.taskTracker.managers.taskManager.fileManager.FileBackedTaskManager;
 import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Subtask;
@@ -39,11 +40,13 @@ public class HttpTaskManager extends FileBackedTaskManager {
         if (jsonEpics != null) {
             jsonArray = JsonParser.parseString(jsonEpics).getAsJsonArray();
             recoverEpics(jsonArray);
+            //вот тут можно обновить айдишку, у эпика
         }
         if (jsonSubtasks != null) {
             jsonArray = JsonParser.parseString(jsonSubtasks).getAsJsonArray();
             recoverSubtasks(jsonArray);
         }
+        //айдишку обновлять не надо, она у меня генерируется автоматически при создании любого таска(сабтаска
 
         if (jsonHistory != null) {
             jsonArray = JsonParser.parseString(jsonHistory).getAsJsonArray();
@@ -69,6 +72,7 @@ public class HttpTaskManager extends FileBackedTaskManager {
         for (JsonElement jsonElement : jsonArray) {
             Epic epic = gson.fromJson(jsonElement, Epic.class);
             super.addEpic(epic);
+            Epic.setEpicId(jsonArray.size() + 100_000); //обновил айдишку
         }
     }
     private void recoverSubtasks(JsonArray jsonArray) {

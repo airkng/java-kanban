@@ -39,7 +39,6 @@ public class HttpTaskServer {
         server.createContext("/tasks/history/", new TaskHistoryHandler(manager));
         server.createContext("/tasks/subtask/epic/", new GetEpicSubtaskListHandler(manager));
         server.createContext("/tasks/", new GetPrioritizedTasksHandler(manager));
-       // server.start();
     }
 
     public void start() {

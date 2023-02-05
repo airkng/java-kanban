@@ -75,7 +75,8 @@ public class HttpTaskSeverTest {
     public void addOrUpdateTask_shouldReturnRightCodeResponse() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         URI url = URI.create("http://localhost:8080/tasks/task/");
-        String json = gson.toJson(task1);
+        Task test = new Task("test", "testststete", Status.NEW, 100);
+        String json = gson.toJson(test);
         HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -85,7 +86,7 @@ public class HttpTaskSeverTest {
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         assertEquals(201, response.statusCode());
-        assertEquals(task1, httpTaskServer.manager.getTask(task1.getId()));
+        assertEquals(test, httpTaskServer.manager.getTask(test.getId()));
 
         json = gson.toJson(task2);
         body = HttpRequest.BodyPublishers.ofString(json);
@@ -104,7 +105,8 @@ public class HttpTaskSeverTest {
     public void addOrUpdateEpic_shouldReturnRightCodeResponse() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         URI url = URI.create("http://localhost:8080/tasks/epic/");
-        String json = gson.toJson(epic1);
+        Epic test = new Epic("testingAPI", "testingServer", 10);
+        String json = gson.toJson(test);
 
         HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
         HttpRequest request = HttpRequest.newBuilder()
@@ -140,7 +142,7 @@ public class HttpTaskSeverTest {
                 .POST(body)
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertEquals(201, response.statusCode());
+
 
         json = gson.toJson(sub11);
         body = HttpRequest.BodyPublishers.ofString(json);

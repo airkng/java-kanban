@@ -5,6 +5,8 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import ru.yandex.taskTracker.managers.taskManager.TaskManager;
+import ru.yandex.taskTracker.tasks.Epic;
+import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
 
 import java.io.IOException;
@@ -29,40 +31,39 @@ public class SubtaskHandler implements HttpHandler {
         switch (method) {
             case "GET": {
                 String[] requestPathAndParameters = fullPath.split("/");
-                if (requestPathAndParameters.length == 3) {
-                    if (exchange.getRequestURI().getQuery() == null) {
-                        getSubtasksResponse(exchange); //метод
-                        return;
-                    }
-                    if (exchange.getRequestURI().getQuery().startsWith("id=")) {
-                        getSubtaskResponse(exchange, exchange.getRequestURI().getQuery()); //метод
-                        return;
-                    }
-                    sendClientErrorResponse(exchange, 400, "Неверные параметры query-заголовка (id) либо URL");
-                    break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    getSubtasksResponse(exchange); //метод
+                    return;
                 }
-                sendClientErrorResponse(exchange, 404, "Путь не найден");
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    getSubtaskResponse(exchange, exchange.getRequestURI().getQuery()); //метод
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Неверные параметры query-заголовка (id) либо URL");
                 break;
             }
             case "POST": {
-                addOrUpdateSubtask(exchange);
-                break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    addSubtaskResponse(exchange);                                         //метод
+                    return;
+                }
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    updateSubtaskResponse(exchange, exchange.getRequestURI().getQuery());     //метод
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Bad request");
             }
             case "DELETE": {
                 String[] requestPathAndParameters = fullPath.split("/");
-                if (requestPathAndParameters.length == 3) {
-                    if (exchange.getRequestURI().getQuery() == null) {
-                        deleteSubtasks(exchange);
-                        return;
-                    }
-                    if (exchange.getRequestURI().getQuery().startsWith("id=")) {
-                        deleteSubtaskById(exchange, exchange.getRequestURI().getQuery());
-                        return;
-                    }
-                    sendClientErrorResponse(exchange, 400, "Неверные параметр (id) query-заголовка");
-                    break;
+                if (exchange.getRequestURI().getQuery() == null) {
+                    deleteSubtasks(exchange);
+                    return;
                 }
-                sendClientErrorResponse(exchange, 404, "Запрос по данному URL не найден");
+                if (exchange.getRequestURI().getQuery().startsWith("id=")) {
+                    deleteSubtaskById(exchange, exchange.getRequestURI().getQuery());
+                    return;
+                }
+                sendClientErrorResponse(exchange, 400, "Неверные параметр (id) query-заголовка");
                 break;
             }
             default: {
@@ -125,34 +126,64 @@ public class SubtaskHandler implements HttpHandler {
         sendResponse(exchange, 200, "Task was deleted");
     }
 
-    public void addOrUpdateSubtask(HttpExchange exchange) throws IOException {
+    public void addSubtaskResponse(HttpExchange exchange) throws IOException {
         try {
-            /*if (exchange.getRequestBody().available() != 0) {*/
-                InputStream body = exchange.getRequestBody();
-                String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
-                Subtask subtask = gson.fromJson(jsonBody, Subtask.class);
-                if (subtask == null) {
-                    sendClientErrorResponse(exchange, 400, "Передан null объект");
+            InputStream body = exchange.getRequestBody();
+            String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
+            Subtask subtask = gson.fromJson(jsonBody, Subtask.class);
+            if (subtask == null) {
+                sendClientErrorResponse(exchange, 400, "Передан null объект");
+                return;
+            }
+            if (subtask.getId() != null && subtask.getStatus() != null && subtask.getEpicID() != null) {
+                if (subtask.getId() == -1 || subtask.getEpicID() == -1) {
+                    sendClientErrorResponse(exchange, 423, "Некорректный id");
                     return;
                 }
-                if (subtask.getId() != null && subtask.getStatus() != null && subtask.getEpicID() != null) {
-                    if (subtask.getId() == -1 || subtask.getEpicID() == -1) {
-                        sendClientErrorResponse(exchange, 423, "Некорректный id");
-                        return;
-                    }
-                    sendResponse(exchange, 201, "Ваши изменения были учтены");
-                    int subtaskId = taskManager.addSubtask(subtask);
-                    if (subtaskId == -1) {
-                        taskManager.updateSubtask(subtask);
-                    }
+                int subtaskId = taskManager.addSubtask(subtask);
+                if (subtaskId == -1) {
+                    sendClientErrorResponse(exchange, 423, "Воспользуйтесь методом update");
                     return;
-                } else {
-                    sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status ");
                 }
-            /*} else {*/
-                sendClientErrorResponse(exchange, 400, "Отсутствует json-объект");
-           // }
-        } catch (JsonSyntaxException e) {
+                sendResponse(exchange, 201, "Ваши изменения были учтены");
+            } else {
+                sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
+            }
+        } catch (JsonSyntaxException | IOException e) {
+            sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
+        }
+    }
+
+    public void updateSubtaskResponse(HttpExchange exchange, String requestParameters) throws IOException {
+        String subtaskId = requestParameters.split("=")[1];
+        Optional<Integer> id = getTaskId(subtaskId);
+        if (id.isEmpty()) {
+            sendClientErrorResponse(exchange, 400, "Передан некорректный id в параметре");
+            return;
+        }
+        try {
+            InputStream body = exchange.getRequestBody();
+            String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
+            Subtask subtask = gson.fromJson(jsonBody, Subtask.class);
+            if (subtask == null) {
+                sendClientErrorResponse(exchange, 400, "Передан null объект");
+                return;
+            }
+            if (subtask.getId() != null && subtask.getStatus() != null && subtask.getEpicID() != null) {
+                if (subtask.getId() == -1 || subtask.getEpicID() == -1) {
+                    sendClientErrorResponse(exchange, 423, "Некорректный id");
+                    return;
+                }
+                if (!subtask.getId().equals(id.get())) {
+                    sendClientErrorResponse(exchange,400, "Id в теле не совпадает с id в query");
+                    return;
+                }
+                sendResponse(exchange, 201, "Ваши изменения были учтены");
+                taskManager.updateSubtask(subtask);
+            } else {
+                sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
+            }
+        } catch (JsonSyntaxException | IOException e) {
             sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
         }
     }
