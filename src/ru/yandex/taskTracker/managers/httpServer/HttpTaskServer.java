@@ -26,10 +26,10 @@ public class HttpTaskServer {
      */
     private final int PORT = 8080;
     private final HttpServer server;
-    private final TaskManager manager;
+    public final TaskManager manager;
 
     public HttpTaskServer() throws IOException {
-        manager = Managers.getDefault("http;//localhost:8078");
+        manager = Managers.getDefault("http://localhost:8078");
         server = HttpServer.create();
         server.bind(new InetSocketAddress(PORT), 0);
 
