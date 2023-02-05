@@ -144,8 +144,12 @@ public class KVServer {
 		h.getResponseBody().write(resp);
 	}
 
-	//для теста
+	//для тестов
 	public Map<String, String> getData() {
 		return data;
+	}
+
+	public String getApiToken() {
+		return apiToken;
 	}
 }

@@ -34,7 +34,7 @@ public class KVTaskClient {
             e.printStackTrace();
         }
     }
-
+    //для теста
     public String getAPI_TOKEN() {
         return API_TOKEN;
     }
