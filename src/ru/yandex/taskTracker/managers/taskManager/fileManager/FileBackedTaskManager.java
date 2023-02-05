@@ -1,5 +1,6 @@
 package ru.yandex.taskTracker.managers.taskManager.fileManager;
 
+import ru.yandex.taskTracker.managers.httpServer.HttpTaskServer;
 import ru.yandex.taskTracker.managers.taskManager.InMemoryTaskManager;
 import ru.yandex.taskTracker.managers.taskManager.TaskManager;
 import ru.yandex.taskTracker.tasks.Epic;
@@ -13,25 +14,25 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import ru.yandex.taskTracker.managers.utils.CsvTaskConverter;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-
-    private final Path path;
+    private Path path;
 
     //Реальная история. Коротко о разработчиках MicroSoft:
     //когда разработчики Microsoft убрали из Windows игру Pinball, потому что не смогли портировать
     // ее на 64-х разрядную архитектуру. Причем у них даже были ее исходники. Просто они не могли понять,
     // как работает написанный код.
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         TaskManager taskManager = new FileBackedTaskManager("src/ru/yandex/taskTracker/managers/loadData/test2.csv");
 
         System.out.println("Создание тасков");
-        Task task1 = new Task("Book", "Buy autoBook", Status.NEW);
+        Task task1 = new Task("Book", "Buy autoBook", Status.NEW, 50, LocalDateTime.now());
         Task task2 = new Task("Study", "learn java lang", Status.IN_PROGRESS);
         int taskid1 = taskManager.addTask(task1);
         int taskid2 = taskManager.addTask(task2);
@@ -74,12 +75,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         System.out.println(taskLoaderManager.getTasksList());
         System.out.println("История из файла:");
         System.out.println(taskManager.getHistory());
+        HttpTaskServer server = new HttpTaskServer();
     }
 
     private FileBackedTaskManager(String file) {
         path = Paths.get(file);
     }
+    protected FileBackedTaskManager(){
 
+    }
     @Override
     public void deleteTasks() {
         super.deleteTasks();
@@ -176,7 +180,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
-    private void save() {
+    protected void save() {
         try {
             if (Files.exists(path)) {
                 saveExistFile();
@@ -227,11 +231,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 String typeOfTask = textTask.split(",")[1];
 
                 if (TaskType.EPIC.toString().equals(typeOfTask)) {
-                    fileManager.epics.put(task.getId(), (Epic) task);
+                    fileManager.addEpic((Epic) task);
+                    //fileManager.epics.put(task.getId(), (Epic) task);
                 } else if (TaskType.SUBTASK.toString().equals(typeOfTask)) {
-                    fileManager.subtasks.put(task.getId(), (Subtask) task);
+                    fileManager.addSubtask((Subtask) task);
+                    //fileManager.subtasks.put(task.getId(), (Subtask) task);
                 } else if (TaskType.TASK.toString().equals(typeOfTask)) {
-                    fileManager.tasks.put(task.getId(), task);
+                    fileManager.addTask(task);
+                    //fileManager.tasks.put(task.getId(), task);
                 } else {
                     throw new ManagerSaveException("неверный тип таска в файле");
                 }
@@ -248,10 +255,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         fileManager.history.addHistory(fileManager.getSubtask(id));
                 }
             }
-             /*else {
-                fileManager.createUnExistFile();
-            }
-*/
         } catch (IOException e) {
             throw new ManagerSaveException();
         }
