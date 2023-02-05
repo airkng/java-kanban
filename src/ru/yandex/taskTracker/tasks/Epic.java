@@ -5,7 +5,6 @@ import ru.yandex.taskTracker.managers.utils.StartTimeComparator;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Objects;
 
 public class Epic extends Task {
@@ -55,6 +54,10 @@ public class Epic extends Task {
     @Deprecated
     public void setStartTime(LocalDateTime startTime) {
         throw new IllegalStateException("Нельзя изменять поле startTime in Epic.class");
+    }
+
+    public static void setEpicId(int epicId) {
+        Epic.epicId = epicId;
     }
 
     @Override
