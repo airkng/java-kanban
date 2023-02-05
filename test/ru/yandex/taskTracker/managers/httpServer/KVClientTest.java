@@ -5,9 +5,9 @@ import org.junit.jupiter.api.*;
 import java.io.IOException;
 import java.util.Map;
 
-public class KVServer_KVTaskCLient_InteractionTest {
+public class KVClientTest {
+    //нее, нафиг надо, тут тесты намного понятнее, сразу отметается вариант плохого взаимодействия клиента и KVServer
     static KVServer server;
-
     static {
         try {
             server = new KVServer();
