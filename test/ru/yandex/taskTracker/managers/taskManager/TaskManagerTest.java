@@ -8,6 +8,7 @@ import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public abstract class TaskMangerTest<T extends TaskManager> {
+public abstract class TaskManagerTest<T extends TaskManager> {
 
      public T taskManager;
      public Task book;
@@ -26,10 +27,10 @@ public abstract class TaskMangerTest<T extends TaskManager> {
      public Epic movement;
      public Subtask planToMove;
 
-    public abstract T createManager();
+    public abstract T createManager() throws IOException, InterruptedException;
 
     @BeforeEach
-    void prepareToEachTest(){
+    void prepareToEachTest() throws IOException, InterruptedException {
         taskManager = createManager();
         book = new Task("Book", "Buy autoBook", Status.NEW);
         study = new Task("Study", "learn java lang", Status.IN_PROGRESS);

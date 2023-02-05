@@ -6,7 +6,7 @@ import ru.yandex.taskTracker.tasks.Epic;
 import ru.yandex.taskTracker.tasks.Status;
 import ru.yandex.taskTracker.tasks.Subtask;
 import ru.yandex.taskTracker.tasks.Task;
-import ru.yandex.taskTracker.managers.taskManager.TaskMangerTest;
+import ru.yandex.taskTracker.managers.taskManager.TaskManagerTest;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class FileBackedTaskManagerTest extends TaskMangerTest<FileBackedTaskManager> {
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     Path path = Path.of("src/ru/yandex/taskTracker/managers/loadData/test2.csv");
     @Override
     public FileBackedTaskManager createManager() {
