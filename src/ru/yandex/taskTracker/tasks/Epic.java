@@ -20,14 +20,16 @@ public class Epic extends Task {
         super(name, description, status, id);
     }
 
-    public Epic(String name, String description) {
-        super(name, description, Status.NEW, epicId);
-        epicId++;
-    }
     //конструктор для FileManager
     public Epic(String name, String description, Status status, int id, long duration, LocalDateTime startTime){
         super(name, description, status, id, duration, startTime);
     }
+
+    public Epic(String name, String description) {
+        super(name, description, Status.NEW, epicId);
+        epicId++;
+    }
+
     public Epic(String name, String description, int oldEpicID) {
         super(name, description, Status.NEW, oldEpicID);
     }
@@ -38,7 +40,7 @@ public class Epic extends Task {
 
     @Override
     public void setStatus(Status status) {
-        System.out.println("О-оу, господин. Такое делать запрещено");
+        this.status = status;
     }
 
     @Override
@@ -159,8 +161,6 @@ public class Epic extends Task {
         return "Epic = {name = '" + this.name + '\'' +
                 " description = ' " + this.description + '\'' +
                 " status = '" + this.status + '\'' +
-                " id = '" + this.id + '\'' +
-                " startTime = '" + this.getStartTime() + '\'' +
-                " duration = '" + this.getDuration() + '\'' + "\n";
+                " id = '" + this.id + "\n";
     }
 }

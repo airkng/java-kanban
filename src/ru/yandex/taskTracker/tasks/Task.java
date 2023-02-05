@@ -101,7 +101,7 @@ public class Task {
         return status;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
