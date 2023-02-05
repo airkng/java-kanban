@@ -88,6 +88,6 @@ public class KVServer_KVTaskCLient_InteractionTest {
     }
     @Test
     public void registerTest_shouldEqualsApiTokens_afterRegistration() {
-        Assertions.assertEquals(client.getAPI_TOKEN(), server.getApiToken());
+        Assertions.assertEquals(client.getApiToken(), server.getApiToken());
     }
 }

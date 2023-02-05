@@ -9,13 +9,16 @@ import java.nio.charset.StandardCharsets;
 
 public class KVTaskClient {
     private final HttpClient client = HttpClient.newHttpClient();
-    private String API_TOKEN;
-    private String serverUrl;
+    private final String API_TOKEN;
+    private final String serverUrl;
 
     public KVTaskClient(String serverUrl) {
         //registration url and API_TOKEN
+        this.serverUrl = serverUrl;
+        API_TOKEN = registerApiToken();
+    }
+    private String registerApiToken() {
         try {
-            this.serverUrl = serverUrl;
             URI registration = URI.create(serverUrl + "/register");
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
@@ -25,7 +28,7 @@ public class KVTaskClient {
                     .build();
             HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
             HttpResponse<String> response = client.send(request, handler);
-            API_TOKEN = response.body();
+            return response.body();
         } catch (IllegalArgumentException e) {
             System.out.println("Неверный Url");
             e.printStackTrace();
@@ -33,9 +36,11 @@ public class KVTaskClient {
             System.out.println("произошла ошибка при запросе registration на сервер");
             e.printStackTrace();
         }
+        throw new IllegalStateException("Ошибка при регистрации Client при передачи API Token");
     }
+
     //для теста
-    public String getAPI_TOKEN() {
+    public String getApiToken() {
         return API_TOKEN;
     }
 
