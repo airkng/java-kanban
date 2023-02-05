@@ -126,7 +126,8 @@ public class TaskHandler implements HttpHandler {
 
     public void addOrUpdateTask(HttpExchange exchange) throws IOException {
         try {
-            if (exchange.getRequestBody().available() != 0) {
+            /*if (exchange.getRequestBody().available() != 0) {*/ //Вот тут возник вопрос, когда была
+            //эта строка, то тест не проходил. Я ее хотел сделать на проверку пустого body. Не вышло
                 InputStream body = exchange.getRequestBody();
                 String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
                 Task task = gson.fromJson(jsonBody, Task.class);
@@ -144,12 +145,13 @@ public class TaskHandler implements HttpHandler {
                     if (taskId == -1) {
                         taskManager.updateTask(task);
                     }
+                    return;
                 } else {
                     sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status");
                 }
-            } else {
+           // }else {
                 sendClientErrorResponse(exchange, 400, "Отсутствует json-объект");
-            }
+            //}
         } catch (JsonSyntaxException e) {
             sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
         }

@@ -127,7 +127,7 @@ public class SubtaskHandler implements HttpHandler {
 
     public void addOrUpdateSubtask(HttpExchange exchange) throws IOException {
         try {
-            if (exchange.getRequestBody().available() != 0) {
+            /*if (exchange.getRequestBody().available() != 0) {*/
                 InputStream body = exchange.getRequestBody();
                 String jsonBody = new String(body.readAllBytes(), Charset.defaultCharset());
                 Subtask subtask = gson.fromJson(jsonBody, Subtask.class);
@@ -145,12 +145,13 @@ public class SubtaskHandler implements HttpHandler {
                     if (subtaskId == -1) {
                         taskManager.updateSubtask(subtask);
                     }
+                    return;
                 } else {
                     sendClientErrorResponse(exchange, 400, "В json-объекте отсутствует id или Status ");
                 }
-            } else {
+            /*} else {*/
                 sendClientErrorResponse(exchange, 400, "Отсутствует json-объект");
-            }
+           // }
         } catch (JsonSyntaxException e) {
             sendClientErrorResponse(exchange, 400, "Отправлен некорректный json-формат данных");
         }
