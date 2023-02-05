@@ -12,7 +12,7 @@ public class Epic extends Task {
 
     private static int epicId = 100_000;
     private final ArrayList<Subtask> epicSubtasksList = new ArrayList<>();      //Лист сабтасков эпика
-    private final Comparator<Task> timeSort = new StartTimeComparator();
+    //private final Comparator<Task> timeSort = new StartTimeComparator();
 
 
     //конструктор для fileManager
@@ -61,8 +61,11 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getEndTime() {
+        if (epicSubtasksList == null) {
+            return null;
+        }
         if (!epicSubtasksList.isEmpty()) {
-            epicSubtasksList.sort(timeSort);
+            epicSubtasksList.sort(new StartTimeComparator());
             Subtask latestSubtask = epicSubtasksList.get((epicSubtasksList.size() - 1));
             return latestSubtask.getEndTime();
         } else {
@@ -73,8 +76,11 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getStartTime() {
+        if (epicSubtasksList == null) {
+            return null;
+        }
         if (!epicSubtasksList.isEmpty()) {
-            epicSubtasksList.sort(timeSort);
+            epicSubtasksList.sort(new StartTimeComparator());
             return epicSubtasksList.get(0).getStartTime();
         } else {
             return null;
@@ -83,6 +89,9 @@ public class Epic extends Task {
 
     @Override
     public long getDuration() {
+        if (epicSubtasksList == null) {
+            return 0;
+        }
         if (epicSubtasksList.isEmpty()) {
             return 0;
         }
