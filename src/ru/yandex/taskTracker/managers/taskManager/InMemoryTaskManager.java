@@ -301,6 +301,7 @@ public class InMemoryTaskManager implements TaskManager {
     private void addToPrioritizedList(Task task){
         timePrioritizedTasks.add(task);
     }
+
     private boolean isTaskTimeCrossing(Task task){
         if (task.getStartTime() == null ){
             return false;
